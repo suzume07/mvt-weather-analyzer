@@ -1,3 +1,5 @@
+import sys, os
+sys.path.append(os.path.abspath("src"))
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -5,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from src.generate_synthetic_weather import generate_synthetic_weather
 from src.preprocess import load_weather_data, apply_rounding_single, ensure_time_index
-from src.model_eval import evaluate
+from model_eval import evaluate
 from src.mvt_core import find_mvt_points, mvt_shift_summary
 from src.visualize import plot_temp_rounded, plot_error_vs_rounding, plot_mvt_points
 
