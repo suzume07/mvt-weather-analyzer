@@ -1,15 +1,19 @@
 import sys, os
 sys.path.append(os.path.abspath("src"))
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+SRC_PATH = os.path.join(ROOT_DIR, "src")
+if SRC_PATH not in sys.path:
+    sys.path.append(SRC_PATH)
 import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.generate_synthetic_weather import generate_synthetic_weather
+from generate_synthetic_weather import generate_synthetic_weather
 from src.preprocess import load_weather_data, apply_rounding_single, ensure_time_index
 from model_eval import evaluate
-from src.mvt_core import find_mvt_points, mvt_shift_summary
-from src.visualize import plot_temp_rounded, plot_error_vs_rounding, plot_mvt_points
+from mvt_core import find_mvt_points, mvt_shift_summary
+from visualize import plot_temp_rounded, plot_error_vs_rounding, plot_mvt_points
 
 st.set_page_config(page_title="MVT Weather Analyzer", layout="wide")
 
