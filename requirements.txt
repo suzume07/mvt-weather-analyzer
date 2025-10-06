@@ -4,3 +4,4 @@ scikit-learn>=1.0
 matplotlib>=3.4
 jupyter
 notebook
+streamlit>=1.31
