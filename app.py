@@ -25,9 +25,7 @@ def get_weather_data(city="Hanoi", api_key=None):
 
     url = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&units=metric&appid={api_key}&lang=vi"
     resp = requests.get(url)
-    if resp.status_code != 200:
-        st.error(f"Lỗi truy xuất API: {resp.status_code} — {resp.text}")
-        return None
+    
 
     data = resp.json()
     records = []
