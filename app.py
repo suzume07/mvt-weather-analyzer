@@ -148,7 +148,6 @@ with st.expander("Giải thích chi tiết"):
     - Tốc độ thay đổi trung bình được tính theo công thức  
       st.latex(r"v_{tb} = \frac{f(t_{i+1}) - f(t_i)}{t_{i+1} - t_i}")
       nghĩa là *độ biến thiên trung bình của đại lượng trên mỗi đơn vị thời gian*.
-        st.markdown("""
     Trong đó:
     - \( f(t_i) \): giá trị của đại lượng (ví dụ: nhiệt độ) tại thời điểm \( t_i \)  
     - \( f(t_{i+1}) \): giá trị tại thời điểm kế tiếp  
