@@ -271,15 +271,15 @@ round_options = {
 
 round_label = st.selectbox("Chọn mức làm tròn dữ liệu:", list(round_options.keys()), index=2)
 round_level = round_options[round_label]
-def round_name(label:str) -> str:
-     mapping = {
+def round_name(label: str) -> str:
+    mapping = {
         "Đến hàng chục": "đến hàng chục",
         "Đến hàng đơn vị": "đến hàng đơn vị",
         "1 chữ số sau dấu phẩy": "1 chữ số sau dấu phẩy",
         "2 chữ số sau dấu phẩy": "2 chữ số sau dấu phẩy",
         "3 chữ số sau dấu phẩy": "3 chữ số sau dấu phẩy"
-     }
-    return mapping.get(label,label)
+    }
+    return mapping.get(label, label)
 
 df_rounded = df.copy()
 df_rounded[col] = df_rounded[col].round(round_level)
