@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import requests
 
 # ================================
-# 🌤 WEATHER MVT ANALYZER - Phân tích dữ liệu thời tiết theo MVT
+# 🌤 WEATHER MVT ANALYZER
 # ================================
 
 st.set_page_config(page_title="Weather MVT Analyzer", layout="wide")
@@ -132,17 +132,21 @@ mvt_df = pd.DataFrame(results)
 st.dataframe(mvt_df.head(10))
 
 # ============================================================
-# 6️⃣ GIẢI THÍCH & PHÂN TÍCH LÀM TRÒN DỮ LIỆU (MỚI)
+# 6️⃣ GIẢI THÍCH & PHÂN TÍCH LÀM TRÒN DỮ LIỆU
 # ============================================================
-st.subheader("🧠 Giải thích & Phân tích làm tròn dữ liệu (mức 0,1,2,3 chữ số)")
 
-# Hàm tính đạo hàm xấp xỉ chính xác theo đơn vị thời gian (value / day)
-def compute_derivative_series(df, col):
-    t_days = df["timestamp_days"]
-    y = df[col]
-    n = len(df)
+st.subheader("🧠 Giải thích & Phân tích làm tròn dữ liệu (0–3 chữ số)")
 
-    deriv = np.zeros(n)
+# Chuẩn bị dữ liệu thời gian (tính theo ngày)
+t0 = df["timestamp"].iloc[0]
+df["timestamp_days"] = (df["timestamp"] - t0).dt.total_seconds() / 86400.0
+
+# ---- Hàm tính đạo hàm xấp xỉ ----
+def compute_derivative_series(df_local, col_name):
+    t_days = df_local["timestamp_days"]
+    y = df_local[col_name]
+    n = len(df_local)
+    d = np.zeros(n)
     for i in range(n):
         if 0 < i < n - 1:
             dt = t_days.iloc[i + 1] - t_days.iloc[i - 1]
@@ -153,52 +157,38 @@ def compute_derivative_series(df, col):
         else:
             dt = t_days.iloc[-1] - t_days.iloc[-2]
             dy = y.iloc[-1] - y.iloc[-2]
-        deriv[i] = dy / dt if dt != 0 else np.nan
+        d[i] = dy / dt if dt != 0 else np.nan
+    return pd.Series(d, name=f"d{col_name}/dt")
 
-    return pd.Series(deriv, name=f"d{col}/dt")
-
-    # endpoints: forward/backward
-    dt0 = t_days[1] - t_days[0]
-    if dt0 != 0:
-        d[0] = (y[1] - y[0]) / dt0
-  dtN = t_days.iloc[-1] - t_days.iloc[-2] if n >= 2 else np.nan
-    if not np.isnan(dtN) and dtN != 0:
-        d[-1] = (y[-1] - y[-2]) / dtN
-    return pd.Series(d, index=df_local.index)
-
-# Hàm đếm số khoảng có MVT ước lượng (nơi đạo hàm hai đầu 'bracket' secant)
+# ---- Hàm đếm số khoảng MVT ----
 def count_mvt_intervals(df_local, col_name, deriv_series):
-    t0 = df_local['timestamp'].iloc[0]
-    t_days = (df_local['timestamp'] - t0).dt.total_seconds() / 86400.0
+    t0 = df_local["timestamp"].iloc[0]
+    t_days = (df_local["timestamp"] - t0).dt.total_seconds() / 86400.0
     y = df_local[col_name].to_numpy(dtype=float)
     n = len(y)
     count = 0
     for i in range(n - 1):
-        if (t_days[i+1] - t_days[i]) == 0:
+        if (t_days[i + 1] - t_days[i]) == 0:
             continue
-        S = (y[i+1] - y[i]) / (t_days[i+1] - t_days[i])
+        S = (y[i + 1] - y[i]) / (t_days[i + 1] - t_days[i])
         d_i = deriv_series.iloc[i]
-        d_ip1 = deriv_series.iloc[i+1]
+        d_ip1 = deriv_series.iloc[i + 1]
         if np.isnan(S) or np.isnan(d_i) or np.isnan(d_ip1):
             continue
         if (d_i - S) * (d_ip1 - S) < 0 or (d_i - S) == 0 or (d_ip1 - S) == 0:
             count += 1
     return count
 
-# Các mức làm tròn cần so sánh
+# ---- So sánh 4 mức làm tròn ----
 rounding_levels = [0, 1, 2, 3]
-
-# Tính đạo hàm gốc
 deriv_orig = compute_derivative_series(df, col)
 
-# Tạo bảng tóm tắt so sánh
 summary_rows = []
 for k in rounding_levels:
     df_r = df.copy()
     df_r[col] = df_r[col].round(k)
     deriv_r = compute_derivative_series(df_r, col)
 
-    # Mask các giá trị hợp lệ
     mask = (~deriv_orig.isna()) & (~deriv_r.isna())
     if mask.sum() > 0:
         mae = float(np.nanmean(np.abs(deriv_orig[mask] - deriv_r[mask])))
@@ -211,120 +201,95 @@ for k in rounding_levels:
         sign_changes = 0
         sign_change_pct = np.nan
 
-    # Số khoảng có MVT ước lượng
     mvt_count_orig = count_mvt_intervals(df, col, deriv_orig)
     mvt_count_round = count_mvt_intervals(df_r, col, deriv_r)
 
     summary_rows.append({
         "Làm tròn (chữ số)": k,
-        "MAE đạo hàm (value/day)": mae,
-        "Max err đạo hàm": max_err,
+        "MAE đạo hàm": mae,
+        "Max error": max_err,
         "% đổi dấu đạo hàm": round(sign_change_pct, 2) if not np.isnan(sign_change_pct) else np.nan,
         "Số khoảng MVT (gốc)": mvt_count_orig,
         "Số khoảng MVT (làm tròn)": mvt_count_round
     })
 
 summary_df = pd.DataFrame(summary_rows)
-st.markdown("**Bảng so sánh tóm tắt ảnh hưởng của làm tròn**")
+st.markdown("**📋 Bảng so sánh tóm tắt ảnh hưởng của làm tròn**")
 st.dataframe(summary_df)
 
-# Hiển thị chi tiết từng mức làm tròn trong các expander (biểu đồ & số liệu)
+# ---- Chi tiết từng mức làm tròn ----
 for k in rounding_levels:
     with st.expander(f"Chi tiết: làm tròn {k} chữ số sau dấu phẩy"):
         df_r = df.copy()
         df_r[col] = df_r[col].round(k)
         deriv_r = compute_derivative_series(df_r, col)
 
-        # Biểu đồ so sánh dữ liệu gốc và làm tròn
         fig, axes = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
-        axes[0].plot(df['timestamp'], df[col], marker='o', label='Dữ liệu gốc', alpha=0.8)
-        axes[0].plot(df_r['timestamp'], df_r[col], marker='x', linestyle='--', label=f'Làm tròn {k}', alpha=0.9)
-        axes[0].set_title(f'Dữ liệu gốc vs làm tròn ({k} chữ số)')
+        axes[0].plot(df["timestamp"], df[col], marker="o", label="Gốc", alpha=0.8)
+        axes[0].plot(df_r["timestamp"], df_r[col], marker="x", linestyle="--", label=f"Làm tròn {k}", alpha=0.9)
+        axes[0].set_title(f"Dữ liệu gốc vs làm tròn ({k} chữ số)")
         axes[0].legend()
-        axes[0].set_ylabel(col)
 
-        # Biểu đồ đạo hàm so sánh
-        axes[1].plot(df['timestamp'], deriv_orig, marker='o', label='Đạo hàm gốc')
-        axes[1].plot(df_r['timestamp'], deriv_r, marker='x', linestyle='--', label=f'Đạo hàm làm tròn {k}')
-        axes[1].set_title('Đạo hàm xấp xỉ (value / day)')
+        axes[1].plot(df["timestamp"], deriv_orig, marker="o", label="Đạo hàm gốc")
+        axes[1].plot(df_r["timestamp"], deriv_r, marker="x", linestyle="--", label=f"Đạo hàm làm tròn {k}")
+        axes[1].set_title("Đạo hàm xấp xỉ (value/day)")
         axes[1].legend()
-        axes[1].set_ylabel('đơn vị / day')
         plt.tight_layout()
         st.pyplot(fig)
 
-        # Số liệu chi tiết
-        mask = (~deriv_orig.isna()) & (~deriv_r.isna())
-        if mask.sum() > 0:
-            mae = np.nanmean(np.abs(deriv_orig[mask] - deriv_r[mask]))
-            max_err = np.nanmax(np.abs(deriv_orig[mask] - deriv_r[mask]))
-            sign_changes = int(np.sum((np.sign(deriv_orig[mask]) * np.sign(deriv_r[mask])) < 0))
-            st.markdown(f"- **MAE đạo hàm:** {mae:.6g}")
-            st.markdown(f"- **Max error đạo hàm:** {max_err:.6g}")
-            st.markdown(f"- **Số điểm đổi dấu đạo hàm (trong vùng so sánh):** {sign_changes} / {mask.sum()}")
-        else:
-            st.markdown("Không có đủ giá trị đạo hàm hợp lệ để so sánh.")
+# ============================================================
+# 🔎 Minh họa công thức xấp xỉ tuyến tính
+# ============================================================
 
-# ---------------------------------------------------------
-# Minh hoạ công thức xấp xỉ tuyến tính f(b) ≈ f(a) + f'(a)*(x-a)
-# ---------------------------------------------------------
 st.markdown("---")
-st.subheader("🔎 Minh hoạ công thức xấp xỉ tuyến tính")
+st.subheader("🔎 Minh họa công thức xấp xỉ tuyến tính f(b) ≈ f(a) + f'(a)(x-a)")
 
-st.markdown("Công thức xấp xỉ tuyến tính (tuyến tính hoá tại a):\n\n"
-            r"$$f(b) \approx f(a) + f'(a)\,(x - a)$$\n\n"
-            "Trong dữ liệu rời rạc, ta ước lượng f'(a) bằng sai phân trung tâm/tiến/lùi. "
-            "Minh họa sau cho thấy vì sao công thức này hợp lý khi khoảng ngắn và dữ liệu mượt.")
-
-# Chọn khoảng để minh hoạ
 max_i = max(0, len(df) - 2)
 idx = st.number_input("Chọn chỉ số i để minh họa (xét khoảng i → i+1)", min_value=0, max_value=max_i, value=0, step=1)
 a_idx = int(idx)
 b_idx = a_idx + 1
 
-# Tính đạo hàm tại a (tính từ đạo hàm gốc tính bên trên)
 f_a = float(df[col].iloc[a_idx])
 f_b = float(df[col].iloc[b_idx])
-t0 = df['timestamp'].iloc[0]
-t_days = (df['timestamp'] - t0).dt.total_seconds() / 86400.0
-dt_ab = t_days.iloc[b_idx] - t_days.iloc[a_idx]
 fprime_a = deriv_orig.iloc[a_idx]
+t0 = df["timestamp"].iloc[0]
+t_days = (df["timestamp"] - t0).dt.total_seconds() / 86400.0
+dt_ab = t_days.iloc[b_idx] - t_days.iloc[a_idx]
 
 if np.isnan(fprime_a):
-    st.warning("Không có giá trị đạo hàm tại điểm a để minh họa (có thể do dữ liệu quá ít hoặc trùng thời điểm). Chọn i khác.")
+    st.warning("Không có giá trị đạo hàm tại điểm a để minh họa.")
 else:
     f_approx = f_a + fprime_a * dt_ab
     err = f_b - f_approx
     pct_err = (err / f_b * 100.0) if f_b != 0 else np.nan
 
-    # Vẽ minh họa
-    x_lin = np.linspace(t_days.iloc[a_idx] - dt_ab*0.2, t_days.iloc[b_idx] + dt_ab*0.2, 100)
+    x_lin = np.linspace(t_days.iloc[a_idx] - dt_ab * 0.2, t_days.iloc[b_idx] + dt_ab * 0.2, 100)
     y_lin = f_a + fprime_a * (x_lin - t_days.iloc[a_idx])
-    x_lin_ts = t0 + pd.to_timedelta(x_lin, unit='D')
+    x_lin_ts = t0 + pd.to_timedelta(x_lin, unit="D")
 
     fig3, ax3 = plt.subplots(figsize=(9, 4))
-    ax3.plot(df['timestamp'], df[col], marker='o', label='Dữ liệu gốc')
-    ax3.scatter([df['timestamp'].iloc[a_idx]], [f_a], color='green', s=80, label='a (điểm tuyến tính hoá)')
-    ax3.scatter([df['timestamp'].iloc[b_idx]], [f_b], color='red', s=80, label='b (giá trị thật)')
-    ax3.plot(x_lin_ts, y_lin, linestyle='--', color='orange', label="Đường xấp xỉ tại a: f(a)+f'(a)(x-a)")
-    ax3.set_title(f"Minh họa xấp xỉ tuyến tính cho khoảng {a_idx} → {b_idx}")
-    ax3.set_ylabel(col)
+    ax3.plot(df["timestamp"], df[col], marker="o", label="Dữ liệu gốc")
+    ax3.scatter([df["timestamp"].iloc[a_idx]], [f_a], color="green", s=80, label="a (tuyến tính hóa)")
+    ax3.scatter([df["timestamp"].iloc[b_idx]], [f_b], color="red", s=80, label="b (thực)")
+    ax3.plot(x_lin_ts, y_lin, linestyle="--", color="orange", label="Đường xấp xỉ f(a)+f'(a)(x-a)")
     ax3.legend()
     st.pyplot(fig3)
 
-    # Hiện kết quả số
-    st.markdown(f"- Giá trị thật tại b: **f(b) = {f_b:.6g}**")
-    st.markdown(f"- Giá trị xấp xỉ bằng phương pháp tuyến tính hoá tại a: **f_approx = {f_approx:.6g}**")
-    st.markdown(f"- Sai số tuyệt đối: **{err:.6g}**, Sai số tương đối: **{pct_err:.3f}%**")
+    st.markdown(f"- **f(b)** = {f_b:.6g}")
+    st.markdown(f"- **f_approx** = {f_approx:.6g}")
+    st.markdown(f"- **Sai số tuyệt đối:** {err:.6g}")
+    st.markdown(f"- **Sai số tương đối:** {pct_err:.3f}%")
 
-# ---------------------------------------------------------
-# Tổng kết & diễn giải bằng văn bản
-# ---------------------------------------------------------
+# ============================================================
+# ✅ KẾT LUẬN
+# ============================================================
+
 st.markdown("---")
-st.markdown("### ✅ Kết luận (tóm tắt) về ảnh hưởng của làm tròn dữ liệu:")
+st.markdown("### ✅ Kết luận:")
 st.markdown("""
-- **Làm tròn làm mất chi tiết nhỏ**: các dao động cỡ nhỏ có thể bị triệt tiêu, khiến đạo hàm (dựa trên sai phân) giảm hoặc biến đổi.
-- **Làm tròn có thể đổi dấu đạo hàm** ở nhiều điểm, điều này có thể khiến ta **không tìm được điểm MVT** trong một số khoảng (vì đạo hàm không còn chéo qua giá trị secant).
-- **MAE / Max error của đạo hàm tăng theo mức làm tròn**: tức là thông tin về tốc độ thay đổi tức thời bị méo đi.
-- **Ảnh hưởng tới dự báo**: nếu mô hình dự báo/ước lượng ngắn hạn phụ thuộc vào đạo hàm tức thời (hoặc gradient), việc làm tròn quá mức sẽ làm cho dự báo **mất nhạy** với biến đổi ngắn hạn hoặc thậm chí đưa đến dự báo sai hướng.
-- **Lời khuyên thực tế**: tránh làm tròn trước khi tính đạo hàm; nếu cần, hãy làm mịn (smoothing) thay vì làm tròn thô, hoặc thực hiện phân tích nhạy (sensitivity) với các mức làm tròn như trên.
+- Làm tròn làm mất chi tiết nhỏ và có thể đảo dấu đạo hàm.
+- Làm tròn quá mức khiến đạo hàm và điểm MVT bị sai lệch.
+- MAE/Max Error đạo hàm tăng theo mức làm tròn.
+- Nếu dùng đạo hàm để dự báo ngắn hạn, việc làm tròn thô có thể gây dự báo sai hướng.
+- 👉 Hạn chế làm tròn trước khi tính đạo hàm; nếu cần, nên làm mịn (smoothing) thay vì làm tròn thô.
 """)
