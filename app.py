@@ -28,15 +28,15 @@ def get_weather_data(city="Hanoi", api_key=None):
     records = []
     for item in data["list"]:
         records.append({
-            "timestamp": item["dt_txt"],
-            "temperature": item["main"]["temp"],
-            "humidity": item["main"]["humidity"],
-            "precip": item.get("rain", {}).get("3h", 0)
+            "Thời điểm": item["dt_txt"],
+            "Nhiệt độ": item["main"]["temp"],
+            "Độ ẩm": item["main"]["humidity"],
+            "Lượng mưa": item.get("rain", {}).get("3h", 0)
         })
     df = pd.DataFrame(records)
-    df["timestamp"] = pd.to_datetime(df["timestamp"])
-    df = df.sort_values("timestamp").reset_index(drop=True)
-    df["timestamp_days"] = (df["timestamp"] - df["timestamp"].iloc[0]).dt.total_seconds() / 86400.0
+    df["Thời điểm"] = pd.to_datetime(df["Thời điểm"])
+    df = df.sort_values("Thời điểm").reset_index(drop=True)
+    df["timestamp_days"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
     return df
 
 # ============================================================
@@ -52,15 +52,27 @@ option = st.sidebar.radio(
 
 if option == "Dữ liệu mẫu":
     df = pd.read_csv("data/sample_weather.csv")
-    df["timestamp"] = pd.to_datetime(df["timestamp"])
-    df["timestamp_days"] = (df["timestamp"] - df["timestamp"].iloc[0]).dt.total_seconds() / 86400.0
+    df.rename(columns={
+        "timestamp": "Thời điểm",
+        "temperature": "Nhiệt độ",
+        "humidity": "Độ ẩm",
+        "precip": "Lượng mưa"
+    }, inplace=True)
+    df["Thời điểm"] = pd.to_datetime(df["Thời điểm"])
+    df["timestamp_days"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
 
 elif option == "Tải file CSV":
     uploaded = st.sidebar.file_uploader("Tải lên file CSV", type=["csv"])
     if uploaded is not None:
         df = pd.read_csv(uploaded)
-        df["timestamp"] = pd.to_datetime(df["timestamp"])
-        df["timestamp_days"] = (df["timestamp"] - df["timestamp"].iloc[0]).dt.total_seconds() / 86400.0
+        df.rename(columns={
+            "timestamp": "Thời điểm",
+            "temperature": "Nhiệt độ",
+            "humidity": "Độ ẩm",
+            "precip": "Lượng mưa"
+        }, inplace=True)
+        df["Thời điểm"] = pd.to_datetime(df["Thời điểm"])
+        df["timestamp_days"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
     else:
         st.warning(" Vui lòng tải file CSV hoặc chọn dữ liệu khác.")
         st.stop()
@@ -86,10 +98,10 @@ st.dataframe(df.head())
 # ============================================================
 
 st.subheader(" 2. Biểu đồ diễn biến các yếu tố thời tiết")
-col = st.selectbox("Chọn yếu tố để phân tích:", ["temperature", "humidity", "precip"], index=0)
+col = st.selectbox("Chọn yếu tố để phân tích:", ["Nhiệt độ", "Độ ẩm", "Lượng mưa"], index=0)
 
 fig, ax = plt.subplots(figsize=(10, 4))
-ax.plot(df["timestamp"], df[col], marker="o", label=col)
+ax.plot(df["Thời điểm"], df[col], marker="o", label=col)
 ax.set_xlabel("Thời gian")
 ax.set_ylabel(col)
 ax.legend()
@@ -101,35 +113,25 @@ st.pyplot(fig)
 
 st.subheader("3. Phân tích tốc độ thay đổi")
 
-# Tính chênh lệch thời gian giữa các mẫu (tính theo giờ)
-df["dt_hours"] = df["timestamp"].diff().dt.total_seconds() / 3600.0
+df["dt_hours"] = df["Thời điểm"].diff().dt.total_seconds() / 3600.0
+df["Chênh lệch"] = df[col].diff()
+df["Độ chênh lệch/giờ"] = df["Chênh lệch"] / df["dt_hours"]
 
-# Hiệu (độ thay đổi giá trị) giữa hai quan sát liên tiếp
-df["Độ chênh lệch"] = df[col].diff()
+avg_per_hour = df["Độ chênh lệch/giờ"].dropna().mean()
+std_per_hour = df["Độ chênh lệch/giờ"].dropna().std()
+mae_per_hour = np.abs(df["Độ chênh lệch/giờ"].dropna()).mean()
 
-# Tốc độ thay đổi (đạo hàm xấp xỉ) = delta / dt
-df["Độ chênh lệch/giờ"] = df["delta"] / df["dt_hours"]
-
-# Loại bỏ giá trị NaN và tính trung bình
-avg_per_hour = df["Tốc độ chênh lệch"].dropna().mean()
-std_per_hour = df["Tốc độ chênh lệch"].dropna().std()
-mae_per_hour = np.abs(df["slope_per_hour"].dropna()).mean()
-
-# Quy đổi sang °C/ngày 
 avg_per_day = avg_per_hour * 24
 
-# Hiển thị bảng giá trị đầu tiên (giúp giáo viên thấy rõ cách tính)
 st.markdown("**Bảng giá trị và tốc độ thay đổi từng khoảng:**")
-st.dataframe(df[["Thời điểm",col, Độ chênh lệch, Độ chênh lệch/giờ, Tốc độ chênh lệch]].head(10))
+st.dataframe(df[["Thời điểm", col, "Chênh lệch", "Độ chênh lệch/giờ"]].head(10))
 
-# Hiển thị tóm tắt thống kê
 st.markdown("**Thống kê tóm tắt:**")
 st.markdown(f"- Trung bình (°C/giờ): **{avg_per_hour:.6f}**")
 st.markdown(f"- Độ lệch chuẩn (°C/giờ): **{std_per_hour:.4f}**")
 st.markdown(f"- Sai số tuyệt đối trung bình (|Δ|): **{mae_per_hour:.4f}**")
 st.markdown(f"- Tương đương (°C/ngày): **{avg_per_day:.6f}**")
 
-# Diễn giải
 if np.isnan(avg_per_hour):
     st.warning("Không đủ dữ liệu để tính tốc độ thay đổi.")
 else:
@@ -139,7 +141,7 @@ else:
         trend = f"tăng trung bình {avg_per_hour:.4f} °C mỗi giờ (~{avg_per_day:.6f} °C/ngày)"
     else:
         trend = f"giảm trung bình {abs(avg_per_hour):.4f} °C mỗi giờ (~{abs(avg_per_day):.6f} °C/ngày)"
-    st.success(f"→ Nhìn chung, {"Nhiệt độ"} có xu hướng **{trend}** trong giai đoạn quan sát.")
+    st.success(f"→ Nhìn chung, {col} có xu hướng **{trend}** trong giai đoạn quan sát.")
 
 # Giải thích 
 with st.expander("Giải thích chi tiết"):
