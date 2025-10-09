@@ -149,15 +149,15 @@ with st.expander("Giải thích chi tiết"):
     """)
     st.latex(r"v_{tb} = \frac{f(t_{i+1}) - f(t_i)}{t_{i+1} - t_i}")
     st.markdown("""
-    Trong đó:
-    - \( f(t_i) \): giá trị của đại lượng (ví dụ: **nhiệt độ**) tại thời điểm \( t_i \)  
-    - \( f(t_{i+1}) \): giá trị tại thời điểm kế tiếp  
-    - Biểu thức cho biết **độ biến thiên trung bình của đại lượng trên mỗi đơn vị thời gian.**
+    Trong đó:""")
+     st.latex( f(t_i) ) st.mark(""": giá trị của đại lượng (ví dụ: **nhiệt độ**) tại thời điểm""") st.latex( t_i )  
+     st.latex( f(t_{i+1}) ) st.mark(""": giá trị tại thời điểm kế tiếp  
+     Biểu thức cho biết **độ biến thiên trung bình của đại lượng trên mỗi đơn vị thời gian.**
 
     **Cách hiểu:**  
     - Nếu kết quả > 0 → đại lượng **tăng** theo thời gian.  
-    - Nếu < 0 → đại lượng **giảm**.  
-    - Nếu gần 0 → đại lượng **gần như ổn định**.
+    - Nếu kết quả < 0 → đại lượng **giảm**.  
+    - Nếu kết quả = 0 → đại lượng **gần như ổn định**.
 
     **Ví dụ:**  
     Nếu tốc độ trung bình là -0.20 °C/giờ, nghĩa là cứ mỗi giờ nhiệt độ giảm trung bình 0.20 °C  
