@@ -96,15 +96,74 @@ ax.legend()
 st.pyplot(fig)
 
 # ============================================================
-# 3. TÍNH TOÁN CƠ BẢN
+# 3. PHÂN TÍCH TỐC ĐỘ THAY ĐỔI 
 # ============================================================
 
-st.subheader(" 3. Phân tích tốc độ thay đổi cơ bản")
+st.subheader("3. Phân tích tốc độ thay đổi")
 
-df["slope"] = df[col].diff()
-df["derivative"] = (df[col].shift(-1) - df[col].shift(1)) / 2
-avg_slope = np.mean(df["slope"].dropna())
-st.success(f"Tốc độ thay đổi trung bình của {col} ≈ {avg_slope:.3f}")
+# Tính chênh lệch thời gian giữa các mẫu (tính theo giờ)
+df["dt_hours"] = df["timestamp"].diff().dt.total_seconds() / 3600.0
+
+# Hiệu (độ thay đổi giá trị) giữa hai quan sát liên tiếp
+df["delta"] = df[col].diff()
+
+# Tốc độ thay đổi (đạo hàm xấp xỉ) = delta / dt
+df["slope_per_hour"] = df["delta"] / df["dt_hours"]
+
+# Loại bỏ giá trị NaN và tính trung bình
+avg_per_hour = df["slope_per_hour"].dropna().mean()
+std_per_hour = df["slope_per_hour"].dropna().std()
+mae_per_hour = np.abs(df["slope_per_hour"].dropna()).mean()
+
+# Quy đổi sang °C/ngày 
+avg_per_day = avg_per_hour * 24
+
+# Hiển thị bảng giá trị đầu tiên (giúp giáo viên thấy rõ cách tính)
+st.markdown("**Bảng giá trị và tốc độ thay đổi từng khoảng:**")
+st.dataframe(df[["timestamp", col, "delta", "dt_hours", "slope_per_hour"]].head(10))
+
+# Hiển thị tóm tắt thống kê
+st.markdown("**Thống kê tóm tắt:**")
+st.markdown(f"- Trung bình (°C/giờ): **{avg_per_hour:.4f}**")
+st.markdown(f"- Độ lệch chuẩn (°C/giờ): **{std_per_hour:.4f}**")
+st.markdown(f"- Sai số tuyệt đối trung bình (|Δ|): **{mae_per_hour:.4f}**")
+st.markdown(f"- Tương đương (°C/ngày): **{avg_per_day:.4f}**")
+
+# Diễn giải
+if np.isnan(avg_per_hour):
+    st.warning("Không đủ dữ liệu để tính tốc độ thay đổi.")
+else:
+    if abs(avg_per_hour) < 1e-6:
+        trend = "không có xu hướng rõ ràng (gần như ổn định)"
+    elif avg_per_hour > 0:
+        trend = f"tăng trung bình {avg_per_hour:.4f} °C mỗi giờ (~{avg_per_day:.3f} °C/ngày)"
+    else:
+        trend = f"giảm trung bình {abs(avg_per_hour):.4f} °C mỗi giờ (~{abs(avg_per_day):.3f} °C/ngày)"
+    st.success(f"→ Nhìn chung, {col} có xu hướng **{trend}** trong giai đoạn quan sát.")
+
+# Giải thích 
+with st.expander("Giải thích chi tiết"):
+    st.markdown("""
+    **Ý nghĩa:**  
+    - Tốc độ thay đổi trung bình được tính theo công thức  
+      \\[
+      v_{tb} = \\frac{f(t_{i+1}) - f(t_i)}{t_{i+1} - t_i}
+      \\]
+      nghĩa là *độ biến thiên trung bình của đại lượng trên mỗi đơn vị thời gian*.
+
+    **Cách hiểu:**  
+    - Nếu kết quả > 0 → đại lượng đang tăng theo thời gian.  
+    - Nếu < 0 → đại lượng đang giảm.  
+    - Nếu gần 0 → ít thay đổi, gần như ổn định.
+
+    **Ví dụ:**  
+    Nếu tốc độ trung bình là -0.20 °C/giờ, nghĩa là cứ mỗi giờ nhiệt độ giảm trung bình 0.20 °C  
+    → tương đương giảm khoảng 4.8 °C mỗi ngày.
+
+    **Lưu ý:**  
+    - Kết quả hiển thị `0.000` có thể do làm tròn khi giá trị rất nhỏ.  
+    - Có thể tăng số chữ số hiển thị (ví dụ `.4f` hoặc `.6f`) để xem chi tiết hơn.
+    """)
 
 # ============================================================
 # CÁC HÀM PHỤ 
