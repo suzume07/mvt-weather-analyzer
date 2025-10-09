@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import requests
 
 # ================================
-# 🌤 WEATHER MVT ANALYZER
+# 🌤 WEATHER MVT ANALYZER - Phân tích dữ liệu thời tiết theo MVT
 # ================================
 
 st.set_page_config(page_title="Weather MVT Analyzer", layout="wide")
@@ -41,7 +41,6 @@ def get_weather_data(city="Hanoi", api_key=None):
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     df = df.sort_values("timestamp").reset_index(drop=True)
     return df
-
 
 # ============================================================
 # 2️⃣ NHẬP DỮ LIỆU
@@ -80,6 +79,9 @@ else:
         st.stop()
 
 df["timestamp"] = pd.to_datetime(df["timestamp"])
+t0 = df["timestamp"].iloc[0]
+df["timestamp_days"] = (df["timestamp"] - t0).dt.total_seconds() / 86400.0
+
 st.subheader("📊 Dữ liệu đầu vào")
 st.dataframe(df.head())
 
@@ -98,38 +100,50 @@ ax.legend()
 st.pyplot(fig)
 
 # ============================================================
-# 4️⃣ TÍNH TOÁN CƠ BẢN
+# 4️⃣ HÀM TÍNH ĐẠO HÀM XẤP XỈ
 # ============================================================
 
-st.subheader("🧮 Tính toán tốc độ thay đổi")
+def compute_derivative_series(df, col):
+    t_days = df["timestamp_days"]
+    y = df[col]
+    n = len(df)
 
-df["slope"] = df[col].diff()
-df["derivative"] = (df[col].shift(-1) - df[col].shift(1)) / 2
+    deriv = np.zeros(n)
+    for i in range(n):
+        if 0 < i < n - 1:
+            dt = t_days.iloc[i + 1] - t_days.iloc[i - 1]
+            dy = y.iloc[i + 1] - y.iloc[i - 1]
+        elif i == 0:
+            dt = t_days.iloc[1] - t_days.iloc[0]
+            dy = y.iloc[1] - y.iloc[0]
+        else:
+            dt = t_days.iloc[-1] - t_days.iloc[-2]
+            dy = y.iloc[-1] - y.iloc[-2]
+        deriv[i] = dy / dt if dt != 0 else np.nan
 
-avg_slope = np.mean(df["slope"].dropna())
-st.success(f"📈 Tốc độ thay đổi trung bình của {col} ≈ {avg_slope:.3f}")
+    return pd.Series(deriv, name=f"d{col}/dt")
 
 # ============================================================
-# 5️⃣ PHÂN TÍCH THEO ĐỊNH LÝ GIÁ TRỊ TRUNG BÌNH (MVT)
+# 5️⃣ HÀM ĐẾM KHOẢNG MVT
 # ============================================================
 
-st.subheader("📍 Phân tích theo Định lý Giá trị Trung bình (MVT)")
-
-results = []
-for i in range(1, len(df) - 1):
-    x1, x2 = df["timestamp"].iloc[i - 1], df["timestamp"].iloc[i]
-    f1, f2 = df[col].iloc[i - 1], df[col].iloc[i]
-    avg_rate = (f2 - f1)
-    c = (f2 - f1) / 2 + f1
-    results.append({
-        "Khoảng": f"[{x1.strftime('%H:%M')}, {x2.strftime('%H:%M')}]",
-        "Δf": round(f2 - f1, 3),
-        "Tốc độ TB": round(avg_rate, 3),
-        "Điểm MVT (xấp xỉ)": round(c, 3)
-    })
-
-mvt_df = pd.DataFrame(results)
-st.dataframe(mvt_df.head(10))
+def count_mvt_intervals(df_local, col_name, deriv_series):
+    t0 = df_local['timestamp'].iloc[0]
+    t_days = (df_local['timestamp'] - t0).dt.total_seconds() / 86400.0
+    y = df_local[col_name].to_numpy(dtype=float)
+    n = len(y)
+    count = 0
+    for i in range(n - 1):
+        if (t_days[i+1] - t_days[i]) == 0:
+            continue
+        S = (y[i+1] - y[i]) / (t_days[i+1] - t_days[i])
+        d_i = deriv_series.iloc[i]
+        d_ip1 = deriv_series.iloc[i+1]
+        if np.isnan(S) or np.isnan(d_i) or np.isnan(d_ip1):
+            continue
+        if (d_i - S) * (d_ip1 - S) < 0 or (d_i - S) == 0 or (d_ip1 - S) == 0:
+            count += 1
+    return count
 
 # ============================================================
 # 6️⃣ GIẢI THÍCH & PHÂN TÍCH LÀM TRÒN
@@ -216,15 +230,14 @@ else:
     st.markdown(f"- Sai số: **{err:.4f}**, Sai số tương đối: **{pct_err:.2f}%**")
 
 # ============================================================
-# ✅ KẾT LUẬN
+# 8️⃣ KẾT LUẬN
 # ============================================================
 
 st.markdown("---")
 st.markdown("### ✅ Kết luận:")
 st.markdown("""
-- Làm tròn làm mất chi tiết nhỏ và có thể đảo dấu đạo hàm.
-- Làm tròn quá mức khiến đạo hàm và điểm MVT bị sai lệch.
-- MAE/Max Error đạo hàm tăng theo mức làm tròn.
-- Nếu dùng đạo hàm để dự báo ngắn hạn, việc làm tròn thô có thể gây dự báo sai hướng.
-- 👉 Hạn chế làm tròn trước khi tính đạo hàm; nếu cần, nên làm mịn (smoothing) thay vì làm tròn thô.
+- Làm tròn dữ liệu làm giảm chi tiết nhỏ → đạo hàm có thể sai lệch.
+- Có thể đổi dấu đạo hàm → làm mất hoặc sai điểm MVT.
+- Sai số đạo hàm tăng theo mức làm tròn.
+- Nên tránh làm tròn trước khi tính đạo hàm hoặc dự báo.
 """)
