@@ -83,14 +83,14 @@ else:
         st.info("Nhập tên thành phố và API key, sau đó nhấn **Lấy dữ liệu**.")
         st.stop()
 
-st.subheader(" 1. Dữ liệu đầu vào")
+st.subheader(" 1.Dữ liệu đầu vào")
 st.dataframe(df.head())
 
 # ============================================================
 # 3. BIỂU ĐỒ MINH HỌA
 # ============================================================
 
-st.subheader(" 2. Biểu đồ diễn biến các yếu tố thời tiết")
+st.subheader(" 2.Biểu đồ diễn biến các yếu tố thời tiết")
 col = st.selectbox("Chọn yếu tố để phân tích:", ["temperature", "humidity", "precip"], index=0)
 
 fig, ax = plt.subplots(figsize=(10, 4))
@@ -104,7 +104,7 @@ st.pyplot(fig)
 # 4. TÍNH TOÁN CƠ BẢN
 # ============================================================
 
-st.subheader(" 3. Phân tích tốc độ thay đổi cơ bản")
+st.subheader(" 3.Phân tích tốc độ thay đổi cơ bản")
 
 df["slope"] = df[col].diff()
 df["derivative"] = (df[col].shift(-1) - df[col].shift(1)) / 2
@@ -155,7 +155,7 @@ def count_mvt_intervals(df_local, col_name, deriv_series):
 # 6. ẢNH HƯỞNG CỦA LÀM TRÒN DỮ LIỆU
 # ============================================================
 
-st.subheader(" 4. Ảnh hưởng của việc làm tròn dữ liệu đến đạo hàm & Định lý MVT")
+st.subheader(" 4.Ảnh hưởng của việc làm tròn dữ liệu đến đạo hàm & Định lý MVT")
 
 rounding_levels = [-1, 0, 1, 2, 3]  # -1 = làm tròn đến hàng chục
 deriv_orig = compute_derivative_series(df, col)
@@ -196,7 +196,7 @@ st.dataframe(summary_df)
 
 #  SLIDER LÀM TRÒN
 st.markdown("---")
-st.subheader(" 5. Minh họa trực quan mức độ làm tròn dữ liệu")
+st.subheader(" 5.Minh họa trực quan mức độ làm tròn dữ liệu")
 
 round_options = {
     "Đến hàng chục": -1,
@@ -241,7 +241,7 @@ Làm tròn quá lớn khiến dữ liệu mất chi tiết, đạo hàm bị dao
 # ============================================================
 
 st.markdown("---")
-st.subheader("6. Minh họa công thức xấp xỉ tuyến tính f(b) ≈ f(a) + f'(a)(x-a)")
+st.subheader("6.Minh họa công thức xấp xỉ tuyến tính f(b) ≈ f(a) + f'(a)(x-a)")
 
 max_i = max(0, len(df) - 2)
 idx = st.number_input("Chọn chỉ số i để minh họa (xét khoảng i → i+1):", min_value=0, max_value=max_i, value=0, step=1)
