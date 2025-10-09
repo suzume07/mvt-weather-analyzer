@@ -69,7 +69,8 @@ elif option == "Tải file CSV":
             "timestamp": "Thời điểm",
             "temperature": "Nhiệt độ",
             "humidity": "Độ ẩm",
-            "precip": "Lượng mưa"
+            "precip": "Lượng mưa",
+            "timestamp_days": "Thời gian/ngày"
         }, inplace=True)
         df["Thời điểm"] = pd.to_datetime(df["Thời điểm"])
         df["timestamp_days"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
@@ -266,18 +267,17 @@ round_level = round_options[round_label]
 df_rounded = df.copy()
 df_rounded[col] = df_rounded[col].round(round_level)
 
-
 show_derivative = st.checkbox("Hiển thị đạo hàm (tốc độ thay đổi) trên biểu đồ", value=False)
 
 fig2, ax2 = plt.subplots(figsize=(10, 4))
-ax2.plot(df["timestamp"], df[col], label="Dữ liệu gốc", alpha=0.7)
-ax2.plot(df_rounded["timestamp"], df_rounded[col], "--", label=f"Làm tròn {round_level} chữ số", color="orange")
+ax2.plot(df["Thời điểm"], df[col], label="Dữ liệu gốc", alpha=0.7)
+ax2.plot(df_rounded["Thời điểm"], df_rounded[col], "--", label=f"Làm tròn {round_level} chữ số", color="orange")
 
 if show_derivative:
     deriv_orig_plot = compute_derivative_series(df, col)
     deriv_round_plot = compute_derivative_series(df_rounded, col)
-    ax2.plot(df["timestamp"], deriv_orig_plot, "g-", alpha=0.5, label="Đạo hàm (gốc)")
-    ax2.plot(df["timestamp"], deriv_round_plot, "r--", alpha=0.5, label="Đạo hàm (làm tròn)")
+    ax2.plot(df["Thời điểm"], deriv_orig_plot, "g-", alpha=0.5, label="Đạo hàm (gốc)")
+    ax2.plot(df["Thời điểm"], deriv_round_plot, "r--", alpha=0.5, label="Đạo hàm (làm tròn)")
 
 ax2.set_title("Ảnh hưởng của việc làm tròn dữ liệu đến biến thiên và đạo hàm")
 ax2.set_xlabel("Thời gian")
@@ -305,8 +305,8 @@ b_idx = a_idx + 1
 f_a = float(df[col].iloc[a_idx])
 f_b = float(df[col].iloc[b_idx])
 fprime_a = deriv_orig.iloc[a_idx]
-t0 = df["timestamp"].iloc[0]
-t_days = (df["timestamp"] - t0).dt.total_seconds() / 86400.0
+t0 = df["Thời điểm"].iloc[0]
+t_days = (df["Thời điểm"] - t0).dt.total_seconds() / 86400.0
 dt_ab = t_days.iloc[b_idx] - t_days.iloc[a_idx]
 
 if np.isnan(fprime_a):
@@ -321,9 +321,9 @@ else:
     x_lin_ts = t0 + pd.to_timedelta(x_lin, unit="D")
 
     fig3, ax3 = plt.subplots(figsize=(9, 4))
-    ax3.plot(df["timestamp"], df[col], marker="o", label="Dữ liệu gốc")
-    ax3.scatter([df["timestamp"].iloc[a_idx]], [f_a], color="green", s=80, label="a (tuyến tính hóa)")
-    ax3.scatter([df["timestamp"].iloc[b_idx]], [f_b], color="red", s=80, label="b (thực)")
+    ax3.plot(df["Thời điểm"], df[col], marker="o", label="Dữ liệu gốc")
+    ax3.scatter([df["Thời điểm"].iloc[a_idx]], [f_a], color="green", s=80, label="a (tuyến tính hóa)")
+    ax3.scatter([df["Thời điểm"].iloc[b_idx]], [f_b], color="red", s=80, label="b (thực)")
     ax3.plot(x_lin_ts, y_lin, linestyle="--", color="orange", label="Đường xấp xỉ f(a)+f'(a)(x-a)")
     ax3.legend()
     st.pyplot(fig3)
