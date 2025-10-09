@@ -109,7 +109,7 @@ st.subheader(" 3.Phân tích tốc độ thay đổi cơ bản")
 df["slope"] = df[col].diff()
 df["derivative"] = (df[col].shift(-1) - df[col].shift(1)) / 2
 avg_slope = np.mean(df["slope"].dropna())
-st.success(f"📈 Tốc độ thay đổi trung bình của {col} ≈ {avg_slope:.3f}")
+st.success(f"Tốc độ thay đổi trung bình của {col} ≈ {avg_slope:.3f}")
 
 # ============================================================
 # 5. CÁC HÀM PHỤ TRỢ CHO MVT
@@ -155,7 +155,7 @@ def count_mvt_intervals(df_local, col_name, deriv_series):
 # 6. ẢNH HƯỞNG CỦA LÀM TRÒN DỮ LIỆU
 # ============================================================
 
-st.subheader(" 4.Ảnh hưởng của việc làm tròn dữ liệu đến đạo hàm & Định lý MVT")
+st.subheader(" 4.Ảnh hưởng của việc làm tròn dữ liệu đến đạo hàm & giá trị trung bình")
 
 rounding_levels = [-1, 0, 1, 2, 3]  # -1 = làm tròn đến hàng chục
 deriv_orig = compute_derivative_series(df, col)
