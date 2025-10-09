@@ -105,14 +105,14 @@ st.subheader("3. Phân tích tốc độ thay đổi")
 df["dt_hours"] = df["timestamp"].diff().dt.total_seconds() / 3600.0
 
 # Hiệu (độ thay đổi giá trị) giữa hai quan sát liên tiếp
-df["delta"] = df[col].diff()
+df["Độ chênh lệch"] = df[col].diff()
 
 # Tốc độ thay đổi (đạo hàm xấp xỉ) = delta / dt
-df["slope_per_hour"] = df["delta"] / df["dt_hours"]
+df["Độ chênh lệch/giờ"] = df["delta"] / df["dt_hours"]
 
 # Loại bỏ giá trị NaN và tính trung bình
-avg_per_hour = df["slope_per_hour"].dropna().mean()
-std_per_hour = df["slope_per_hour"].dropna().std()
+avg_per_hour = df["Tốc độ chênh lệch"].dropna().mean()
+std_per_hour = df["Tốc độ chênh lệch"].dropna().std()
 mae_per_hour = np.abs(df["slope_per_hour"].dropna()).mean()
 
 # Quy đổi sang °C/ngày 
@@ -120,7 +120,7 @@ avg_per_day = avg_per_hour * 24
 
 # Hiển thị bảng giá trị đầu tiên (giúp giáo viên thấy rõ cách tính)
 st.markdown("**Bảng giá trị và tốc độ thay đổi từng khoảng:**")
-st.dataframe(df[["Thời điểm","Nhiệt độ", "Độ chênh lệch", "Độ chênh lệch/giờ", "Tốc độ chênh lệch"]].head(10))
+st.dataframe(df[["Thời điểm",col, Độ chênh lệch, Độ chênh lệch/giờ, Tốc độ chênh lệch]].head(10))
 
 # Hiển thị tóm tắt thống kê
 st.markdown("**Thống kê tóm tắt:**")
