@@ -156,9 +156,9 @@ with st.expander("Giải thích chi tiết"):
     st.markdown("""**Cách hiểu:**  
     - Nếu kết quả > 0 → đại lượng **tăng** theo thời gian.  
     - Nếu kết quả < 0 → đại lượng **giảm**.  
-    - Nếu kết quả = 0 → đại lượng **gần như ổn định**.
+    - Nếu kết quả = 0 → đại lượng **gần như ổn định**.""")
 
-    **Ví dụ:**  
+    st.markdown("""****Ví dụ:**  
     Nếu tốc độ trung bình là -0.20 °C/giờ, nghĩa là cứ mỗi giờ nhiệt độ giảm trung bình 0.20 °C  
     → tương đương giảm khoảng 4.8 °C mỗi ngày.
     """)
