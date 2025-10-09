@@ -170,41 +170,49 @@ with st.expander("Giải thích chi tiết"):
 # CÁC HÀM PHỤ 
 # ============================================================
 
-def compute_derivative_series(df, col):
-    t_days = df["timestamp_days"]
-    y = df[col]
-    n = len(df)
-    deriv = np.zeros(n)
-    for i in range(n):
-        if 0 < i < n - 1:
-            dt = t_days.iloc[i + 1] - t_days.iloc[i - 1]
-            dy = y.iloc[i + 1] - y.iloc[i - 1]
-        elif i == 0:
-            dt = t_days.iloc[1] - t_days.iloc[0]
-            dy = y.iloc[1] - y.iloc[0]
-        else:
-            dt = t_days.iloc[-1] - t_days.iloc[-2]
-            dy = y.iloc[-1] - y.iloc[-2]
-        deriv[i] = dy / dt if dt != 0 else np.nan
-    return pd.Series(deriv, name=f"d{col}/dt")
 
-def count_mvt_intervals(df_local, col_name, deriv_series):
-    t0 = df_local['timestamp'].iloc[0]
-    t_days = (df_local['timestamp'] - t0).dt.total_seconds() / 86400.0
-    y = df_local[col_name].to_numpy(dtype=float)
-    n = len(y)
+# --- Tính đạo hàm xấp xỉ giữa các điểm liên tiếp ---
+def compute_derivative_series(df, col):
+    """Tính xấp xỉ đạo hàm của cột col theo thời gian (dạng f'(t))."""
+    series = df[col].values
+    timestamps = df["Thời điểm"]
+    deriv = np.full_like(series, np.nan, dtype=np.float64)
+
+    for i in range(len(series) - 1):
+        dt = (timestamps.iloc[i+1] - timestamps.iloc[i]).total_seconds() / 3600.0  # giờ
+        if dt != 0:
+            deriv[i] = (series[i+1] - series[i]) / dt
+    return pd.Series(deriv, index=df.index)
+
+# --- Tính số khoảng thỏa mãn định lý giá trị trung bình (MVT) ---
+def count_mvt_intervals(df, col, deriv):
+    """Đếm số khoảng [i, i+1] có đạo hàm nằm giữa chênh lệch trung bình."""
     count = 0
-    for i in range(n - 1):
-        if (t_days[i + 1] - t_days[i]) == 0:
+    for i in range(len(df) - 1):
+        f_i, f_next = df[col].iloc[i], df[col].iloc[i+1]
+        t_i, t_next = df["Thời điểm"].iloc[i], df["Thời điểm"].iloc[i+1]
+        if pd.isna(f_i) or pd.isna(f_next):
             continue
-        S = (y[i + 1] - y[i]) / (t_days[i + 1] - t_days[i])
-        d_i = deriv_series.iloc[i]
-        d_ip1 = deriv_series.iloc[i + 1]
-        if np.isnan(S) or np.isnan(d_i) or np.isnan(d_ip1):
+        delta_t = (t_next - t_i).total_seconds() / 3600.0
+        if delta_t == 0:
             continue
-        if (d_i - S) * (d_ip1 - S) < 0 or (d_i - S) == 0 or (d_ip1 - S) == 0:
-            count += 1
+        slope = (f_next - f_i) / delta_t
+        if not pd.isna(deriv.iloc[i]):
+            # kiểm tra có nằm giữa min và max của đoạn đó
+            if min(f_i, f_next) <= f_i + slope * (delta_t/2) <= max(f_i, f_next):
+                count += 1
     return count
+
+# --- Làm mịn dữ liệu ---
+def smooth_series(series, window=3):
+    """Trung bình trượt để giảm nhiễu."""
+    return series.rolling(window=window, center=True, min_periods=1).mean()
+
+# --- Tính chênh lệch tuyệt đối trung bình ---
+def mean_abs_diff(series):
+    """Tính sai số trung bình tuyệt đối giữa các phần tử liên tiếp."""
+    diffs = np.abs(np.diff(series))
+    return np.nanmean(diffs)
 
 # ============================================================
 # 4. ẢNH HƯỞNG CỦA LÀM TRÒN DỮ LIỆU
