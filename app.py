@@ -156,7 +156,7 @@ def compute_derivative_series(df_local, col_name):
     dt0 = t_days[1] - t_days[0]
     if dt0 != 0:
         d[0] = (y[1] - y[0]) / dt0
-    dtN = t_days[-1] - t_days[-2] if n >= 2 else np.nan
+  dtN = t_days.iloc[-1] - t_days.iloc[-2] if n >= 2 else np.nan
     if not np.isnan(dtN) and dtN != 0:
         d[-1] = (y[-1] - y[-2]) / dtN
     return pd.Series(d, index=df_local.index)
