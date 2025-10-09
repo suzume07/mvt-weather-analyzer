@@ -9,17 +9,17 @@ import requests
 # ================================
 
 st.set_page_config(page_title="Phân tích dữ liệu thời tiết MVT", layout="wide")
-st.title("🌤 ỨNG DỤNG PHÂN TÍCH DỮ LIỆU THỜI TIẾT THEO ĐỊNH LÝ GIÁ TRỊ TRUNG BÌNH (MVT)")
+st.title("PHÂN TÍCH DỮ LIỆU THỜI TIẾT ỨNG DỤNG ĐỊNH LÝ GIÁ TRỊ TRUNG BÌNH (MVT)")
 st.markdown("---")
 
 # ============================================================
-# 1️⃣ HÀM LẤY DỮ LIỆU
+# 1. HÀM LẤY DỮ LIỆU
 # ============================================================
 
 def get_weather_data(city="Hanoi", api_key=None):
     """Lấy dữ liệu thời tiết 5 ngày (mỗi 3 giờ) từ OpenWeatherMap"""
     if not api_key:
-        st.error("⛔ Thiếu API key. Hãy nhập vào ô bên dưới hoặc thêm vào phần secrets.")
+        st.error("Thiếu API key. Hãy nhập vào ô bên dưới hoặc thêm vào phần secrets.")
         return None
 
     url = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&units=metric&appid={api_key}&lang=vi"
@@ -45,7 +45,7 @@ def get_weather_data(city="Hanoi", api_key=None):
 
 
 # ============================================================
-# 2️⃣ NHẬP DỮ LIỆU
+# 2. NHẬP DỮ LIỆU
 # ============================================================
 
 st.sidebar.header("🗂 NHẬP DỮ LIỆU VÀO ỨNG DỤNG")
@@ -67,30 +67,30 @@ elif option == "Tải file CSV":
         df["timestamp"] = pd.to_datetime(df["timestamp"])
         df["timestamp_days"] = (df["timestamp"] - df["timestamp"].iloc[0]).dt.total_seconds() / 86400.0
     else:
-        st.warning("⚠️ Vui lòng tải file CSV hoặc chọn dữ liệu khác.")
+        st.warning(" Vui lòng tải file CSV hoặc chọn dữ liệu khác.")
         st.stop()
 
 else:
-    city = st.sidebar.text_input("🌆 Nhập tên thành phố:", "Hanoi")
-    api_key = st.sidebar.text_input("🔑 Nhập API key OpenWeatherMap:", type="password")
+    city = st.sidebar.text_input(" Nhập tên thành phố:", "Hanoi")
+    api_key = st.sidebar.text_input(" Nhập API key OpenWeatherMap:", type="password")
     if st.sidebar.button("📡 Lấy dữ liệu"):
         df = get_weather_data(city, api_key)
         if df is not None:
-            st.success(f"✅ Đã tải thành công dữ liệu thời tiết của **{city}**!")
+            st.success(f" Đã tải thành công dữ liệu thời tiết của **{city}**!")
         else:
             st.stop()
     else:
         st.info("Nhập tên thành phố và API key, sau đó nhấn **Lấy dữ liệu**.")
         st.stop()
 
-st.subheader("📊 Dữ liệu đầu vào")
+st.subheader(" Dữ liệu đầu vào")
 st.dataframe(df.head())
 
 # ============================================================
-# 3️⃣ BIỂU ĐỒ MINH HỌA
+# 3. BIỂU ĐỒ MINH HỌA
 # ============================================================
 
-st.subheader("📈 Biểu đồ diễn biến các yếu tố thời tiết")
+st.subheader(" Biểu đồ diễn biến các yếu tố thời tiết")
 col = st.selectbox("Chọn yếu tố để phân tích:", ["temperature", "humidity", "precip"], index=0)
 
 fig, ax = plt.subplots(figsize=(10, 4))
@@ -101,10 +101,10 @@ ax.legend()
 st.pyplot(fig)
 
 # ============================================================
-# 4️⃣ TÍNH TOÁN CƠ BẢN
+# 4. TÍNH TOÁN CƠ BẢN
 # ============================================================
 
-st.subheader("🧮 Phân tích tốc độ thay đổi cơ bản")
+st.subheader(" Phân tích tốc độ thay đổi cơ bản")
 
 df["slope"] = df[col].diff()
 df["derivative"] = (df[col].shift(-1) - df[col].shift(1)) / 2
@@ -112,7 +112,7 @@ avg_slope = np.mean(df["slope"].dropna())
 st.success(f"📈 Tốc độ thay đổi trung bình của {col} ≈ {avg_slope:.3f}")
 
 # ============================================================
-# 5️⃣ CÁC HÀM PHỤ TRỢ CHO MVT
+# 5. CÁC HÀM PHỤ TRỢ CHO MVT
 # ============================================================
 
 def compute_derivative_series(df, col):
@@ -152,10 +152,10 @@ def count_mvt_intervals(df_local, col_name, deriv_series):
     return count
 
 # ============================================================
-# 6️⃣ ẢNH HƯỞNG CỦA LÀM TRÒN DỮ LIỆU
+# 6. ẢNH HƯỞNG CỦA LÀM TRÒN DỮ LIỆU
 # ============================================================
 
-st.subheader("🧠 Ảnh hưởng của việc làm tròn dữ liệu đến đạo hàm & Định lý MVT")
+st.subheader(" Ảnh hưởng của việc làm tròn dữ liệu đến đạo hàm & Định lý MVT")
 
 rounding_levels = [-1, 0, 1, 2, 3]  # -1 = làm tròn đến hàng chục
 deriv_orig = compute_derivative_series(df, col)
@@ -191,12 +191,12 @@ for k in rounding_levels:
 
 
 summary_df = pd.DataFrame(summary_rows)
-st.markdown("**📋 Bảng so sánh ảnh hưởng của các mức làm tròn:**")
+st.markdown("** Bảng so sánh ảnh hưởng của các mức làm tròn:**")
 st.dataframe(summary_df)
 
-# 🎚️ SLIDER LÀM TRÒN
+#  SLIDER LÀM TRÒN
 st.markdown("---")
-st.subheader("🎚️ Minh họa trực quan mức độ làm tròn dữ liệu")
+st.subheader(" Minh họa trực quan mức độ làm tròn dữ liệu")
 
 round_options = {
     "Đến hàng chục": -1,
@@ -237,7 +237,7 @@ Làm tròn quá lớn khiến dữ liệu mất chi tiết, đạo hàm bị dao
 """)
 
 # ============================================================
-# 🔎 MINH HỌA CÔNG THỨC XẤP XỈ TUYẾN TÍNH
+#  MINH HỌA CÔNG THỨC XẤP XỈ TUYẾN TÍNH
 # ============================================================
 
 st.markdown("---")
@@ -256,7 +256,7 @@ t_days = (df["timestamp"] - t0).dt.total_seconds() / 86400.0
 dt_ab = t_days.iloc[b_idx] - t_days.iloc[a_idx]
 
 if np.isnan(fprime_a):
-    st.warning("⚠️ Không có giá trị đạo hàm tại điểm a để minh họa.")
+    st.warning(" Không có giá trị đạo hàm tại điểm a để minh họa.")
 else:
     f_approx = f_a + fprime_a * dt_ab
     err = f_b - f_approx
@@ -280,15 +280,15 @@ else:
     st.markdown(f"- **Sai số tương đối:** {pct_err:.3f}%")
 
 # ============================================================
-# ✅ KẾT LUẬN
+# KẾT LUẬN
 # ============================================================
 
 st.markdown("---")
-st.markdown("### ✅ Kết luận cuối cùng:")
+st.markdown("###  Kết luận cuối cùng:")
 st.markdown("""
 - Làm tròn dữ liệu khiến chi tiết nhỏ bị mất và có thể đảo dấu đạo hàm.
 - Làm tròn quá mức khiến đạo hàm và điểm MVT bị sai lệch.
 - Sai số trung bình và cực đại tăng theo mức làm tròn.
 - Nếu sử dụng đạo hàm để dự báo ngắn hạn, việc làm tròn thô có thể dẫn đến sai hướng.
-- 👉 Khuyến nghị: hạn chế làm tròn trước khi tính đạo hàm; nếu cần, nên dùng phương pháp làm mịn (smoothing) thay vì làm tròn cứng.
+- Hạn chế làm tròn trước khi tính đạo hàm; nếu cần, nên dùng phương pháp làm mịn (smoothing) thay vì làm tròn cứng.
 """)
