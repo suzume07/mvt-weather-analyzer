@@ -38,13 +38,6 @@ def get_weather_data(city="Hanoi", api_key=None):
     df = df.sort_values("timestamp").reset_index(drop=True)
     df["timestamp_days"] = (df["timestamp"] - df["timestamp"].iloc[0]).dt.total_seconds() / 86400.0
     return df
-df.rename(columns={
-    "timestamp": "Thời gian",
-    "temperature": "Nhiệt độ",
-    "humidity": "Độ ẩm",
-    "precip": "Lượng mưa"
-}, inplace=True)
-
 
 # ============================================================
 # 1. NHẬP DỮ LIỆU
