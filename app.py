@@ -149,11 +149,11 @@ with st.expander("Giải thích chi tiết"):
     """)
     st.latex(r"v_{tb} = \frac{f(t_{i+1}) - f(t_i)}{t_{i+1} - t_i}")
     st.markdown("""Trong đó:""")
-    st.latex(r"f(t_i):\ \text{giá trị của đại lượng (ví dụ: nhiệt độ) tại thời điểm } t_i")
-    st.latex(r"f(t_{i+1}):\ \text{giá trị của đại lượng tại thời điểm kế tiếp } t_{i+1}")
-    st.markdown("""Biểu thức cho biết **độ biến thiên trung bình của đại lượng trên mỗi đơn vị thời gian.**
+    - st.latex(r"f(t_i):\ \text{giá trị của đại lượng (ví dụ: nhiệt độ) tại thời điểm } t_i")
+    - st.latex(r"f(t_{i+1}):\ \text{giá trị của đại lượng tại thời điểm kế tiếp } t_{i+1}")
+    st.markdown("""Biểu thức cho biết **độ biến thiên trung bình của đại lượng trên mỗi đơn vị thời gian.**""")
 
-    **Cách hiểu:**  
+    st.markdown("""**Cách hiểu:**  
     - Nếu kết quả > 0 → đại lượng **tăng** theo thời gian.  
     - Nếu kết quả < 0 → đại lượng **giảm**.  
     - Nếu kết quả = 0 → đại lượng **gần như ổn định**.
