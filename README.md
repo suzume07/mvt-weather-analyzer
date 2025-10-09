@@ -11,14 +11,6 @@ Mục tiêu: tái dùng ý tưởng MVT-analyzer (tìm điểm slope trung bình
 - Vẽ biểu đồ các yếu tố thời tiết theo thời gian
 - Tính tốc độ thay đổi trung bình, đạo hàm xấp xỉ
 - Ước lượng điểm MVT trên mỗi khoảng
-- Giải thích từng bước và ảnh hưởng của việc làm tròn dữ liệu
-
-## 🧮 Cách triển khai
-1. Đảm bảo repo có đủ 3 file:
-app.py
-requirements.txt
-data/sample_weather.csv
-2. Đăng nhập [https://share.streamlit.io](https://share.streamlit.io)
-3. Chọn repo → chọn `app.py` → Deploy
+- Giải thích ảnh hưởng của việc làm tròn dữ liệu
 
 ---
