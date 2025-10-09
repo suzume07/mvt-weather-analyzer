@@ -152,7 +152,7 @@ with st.expander("Giải thích chi tiết"):
     - \( f(t_i) \): giá trị của đại lượng (ví dụ: nhiệt độ) tại thời điểm \( t_i \)  
     - \( f(t_{i+1}) \): giá trị tại thời điểm kế tiếp  
     - Biểu thức cho biết **độ biến thiên trung bình của đại lượng trên mỗi đơn vị thời gian.**
-    """)
+    
 
     **Cách hiểu:**  
     - Nếu kết quả > 0 → đại lượng đang tăng theo thời gian.  
@@ -161,7 +161,7 @@ with st.expander("Giải thích chi tiết"):
 
     **Ví dụ:**  
     Nếu tốc độ trung bình là -0.20 °C/giờ, nghĩa là cứ mỗi giờ nhiệt độ giảm trung bình 0.20 °C  
-    → tương đương giảm khoảng 4.8 °C mỗi ngày.
+    → tương đương giảm khoảng 4.8 °C mỗi ngày.""")
     
 # ============================================================
 # CÁC HÀM PHỤ 
