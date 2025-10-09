@@ -132,10 +132,10 @@ mvt_df = pd.DataFrame(results)
 st.dataframe(mvt_df.head(10))
 
 # ============================================================
-# 6️⃣ GIẢI THÍCH & PHÂN TÍCH LÀM TRÒN DỮ LIỆU
+# 6️⃣ GIẢI THÍCH & PHÂN TÍCH LÀM TRÒN
 # ============================================================
 
-st.subheader("🧠 Ảnh hưởng của việc làm tròn dữ liệu đến đạo hàm & MVT")
+st.subheader("🧠 Giải thích & Phân tích làm tròn dữ liệu (mức 0,1,2,3 chữ số)")
 
 rounding_levels = [0, 1, 2, 3]
 deriv_orig = compute_derivative_series(df, col)
@@ -168,27 +168,52 @@ for k in rounding_levels:
     })
 
 summary_df = pd.DataFrame(summary_rows)
-st.markdown("**Bảng so sánh ảnh hưởng của làm tròn:**")
+st.markdown("**Bảng so sánh ảnh hưởng của làm tròn**")
 st.dataframe(summary_df)
 
-# 🎚️ Thêm phần slider để xem trực quan ảnh hưởng của làm tròn
+# ============================================================
+# 7️⃣ MINH HỌA CÔNG THỨC f(b) ≈ f(a) + f'(a)(x-a)
+# ============================================================
+
 st.markdown("---")
-st.subheader("🎚️ Minh họa trực quan mức làm tròn")
+st.subheader("🔎 Minh họa công thức xấp xỉ tuyến tính")
 
-round_level = st.slider("Chọn mức làm tròn dữ liệu:", 0, 3, 1, step=1)
-df_rounded = df.copy()
-df_rounded[col] = df_rounded[col].round(round_level)
+st.markdown("Công thức xấp xỉ tuyến tính:\n\n"
+            r"$$f(b) \approx f(a) + f'(a)(x-a)$$\n\n"
+            "Trong dữ liệu rời rạc, f'(a) được ước lượng bằng sai phân.")
 
-fig2, ax2 = plt.subplots(figsize=(10, 4))
-ax2.plot(df["timestamp"], df[col], label="Dữ liệu gốc", alpha=0.7)
-ax2.plot(df_rounded["timestamp"], df_rounded[col], "--", label=f"Làm tròn {round_level} chữ số", color="orange")
-ax2.set_title("Ảnh hưởng của việc làm tròn dữ liệu đến biến thiên")
-ax2.set_xlabel("Thời gian")
-ax2.set_ylabel(col)
-ax2.legend()
-st.pyplot(fig2)
+max_i = max(0, len(df) - 2)
+idx = st.number_input("Chọn chỉ số i (xét khoảng i → i+1)", min_value=0, max_value=max_i, value=0, step=1)
+a_idx, b_idx = int(idx), int(idx) + 1
 
-st.caption("Kéo thanh trượt để thấy mức độ dữ liệu bị làm tròn ảnh hưởng đến biến thiên của hàm.")
+f_a = float(df[col].iloc[a_idx])
+f_b = float(df[col].iloc[b_idx])
+dt_ab = df["timestamp_days"].iloc[b_idx] - df["timestamp_days"].iloc[a_idx]
+fprime_a = deriv_orig.iloc[a_idx]
+
+if np.isnan(fprime_a):
+    st.warning("Không có đạo hàm tại điểm a, chọn i khác.")
+else:
+    f_approx = f_a + fprime_a * dt_ab
+    err = f_b - f_approx
+    pct_err = (err / f_b * 100.0) if f_b != 0 else np.nan
+
+    x_lin = np.linspace(df["timestamp_days"].iloc[a_idx] - dt_ab*0.2,
+                        df["timestamp_days"].iloc[b_idx] + dt_ab*0.2, 100)
+    y_lin = f_a + fprime_a * (x_lin - df["timestamp_days"].iloc[a_idx])
+    x_lin_ts = t0 + pd.to_timedelta(x_lin, unit="D")
+
+    fig3, ax3 = plt.subplots(figsize=(9, 4))
+    ax3.plot(df["timestamp"], df[col], marker="o", label="Dữ liệu gốc")
+    ax3.scatter([df["timestamp"].iloc[a_idx]], [f_a], color="green", s=80, label="a")
+    ax3.scatter([df["timestamp"].iloc[b_idx]], [f_b], color="red", s=80, label="b (thật)")
+    ax3.plot(x_lin_ts, y_lin, linestyle="--", color="orange", label="f(a)+f'(a)(x-a)")
+    ax3.legend()
+    st.pyplot(fig3)
+
+    st.markdown(f"- f(b) thật: **{f_b:.4f}**")
+    st.markdown(f"- f(b) xấp xỉ: **{f_approx:.4f}**")
+    st.markdown(f"- Sai số: **{err:.4f}**, Sai số tương đối: **{pct_err:.2f}%**")
 
 # ============================================================
 # ✅ KẾT LUẬN
