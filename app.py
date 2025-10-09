@@ -146,7 +146,7 @@ with st.expander("Giải thích chi tiết"):
     st.markdown("""
     **Ý nghĩa:**  
     - Tốc độ thay đổi trung bình được tính theo công thức""")  
-      st.latex(r"v_{tb} = \frac{f(t_{i+1}) - f(t_i)}{t_{i+1} - t_i}")
+    st.latex(r"v_{tb} = \frac{f(t_{i+1}) - f(t_i)}{t_{i+1} - t_i}")
   
     Trong đó:
     - \( f(t_i) \):giá trị của đại lượng (ví dụ: nhiệt độ) tại thời điểm \( t_i \)  
