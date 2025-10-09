@@ -157,7 +157,7 @@ def count_mvt_intervals(df_local, col_name, deriv_series):
 
 st.subheader("🧠 Ảnh hưởng của việc làm tròn dữ liệu đến đạo hàm & Định lý MVT")
 
-rounding_levels = [0, 1, 2, 3]
+rounding_levels = [-1, 0, 1, 2, 3]  # -1 = làm tròn đến hàng chục
 deriv_orig = compute_derivative_series(df, col)
 summary_rows = []
 
@@ -179,13 +179,16 @@ for k in rounding_levels:
     mvt_count_round = count_mvt_intervals(df_r, col, deriv_r)
 
     summary_rows.append({
-        "Mức làm tròn (đến chữ số thứ n sau dấu phẩy)": k,
+        "Mức làm tròn": (
+            "Đến hàng chục" if k == -1 else f"{k} chữ số sau dấu phẩy"
+        ),
         "Sai số trung bình đạo hàm": mae,
         "Sai số lớn nhất đạo hàm": max_err,
         "% thay đổi dấu đạo hàm": round(sign_change_pct, 2),
         "Số khoảng MVT (gốc)": mvt_count_orig,
         "Số khoảng MVT (sau làm tròn)": mvt_count_round
     })
+
 
 summary_df = pd.DataFrame(summary_rows)
 st.markdown("**📋 Bảng so sánh ảnh hưởng của các mức làm tròn:**")
@@ -195,9 +198,20 @@ st.dataframe(summary_df)
 st.markdown("---")
 st.subheader("🎚️ Minh họa trực quan mức độ làm tròn dữ liệu")
 
-round_level = st.slider("Chọn mức làm tròn dữ liệu:", 0, 3, 1, step=1)
+round_options = {
+    "Đến hàng chục": -1,
+    "0 chữ số (nguyên)": 0,
+    "1 chữ số sau dấu phẩy": 1,
+    "2 chữ số sau dấu phẩy": 2,
+    "3 chữ số sau dấu phẩy": 3
+}
+
+round_label = st.selectbox("Chọn mức làm tròn dữ liệu:", list(round_options.keys()), index=2)
+round_level = round_options[round_label]
+
 df_rounded = df.copy()
 df_rounded[col] = df_rounded[col].round(round_level)
+
 
 show_derivative = st.checkbox("Hiển thị đạo hàm (tốc độ thay đổi) trên biểu đồ", value=False)
 
