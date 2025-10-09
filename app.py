@@ -137,21 +137,26 @@ st.dataframe(mvt_df.head(10))
 st.subheader("🧠 Giải thích & Phân tích làm tròn dữ liệu (mức 0,1,2,3 chữ số)")
 
 # Hàm tính đạo hàm xấp xỉ chính xác theo đơn vị thời gian (value / day)
-def compute_derivative_series(df_local, col_name):
-    t0 = df_local['timestamp'].iloc[0]
-    t_days = (df_local['timestamp'] - t0).dt.total_seconds() / 86400.0
-    y = df_local[col_name].to_numpy(dtype=float)
-    n = len(y)
-    d = np.full(n, np.nan, dtype=float)
-    if n < 2:
-        return pd.Series(d, index=df_local.index)
-    # interior: central differences
-    for i in range(1, n-1):
-        dt = t_days[i+1] - t_days[i-1]
-        if dt == 0:
-            d[i] = np.nan
+def compute_derivative_series(df, col):
+    t_days = df["timestamp_days"]
+    y = df[col]
+    n = len(df)
+
+    deriv = np.zeros(n)
+    for i in range(n):
+        if 0 < i < n - 1:
+            dt = t_days.iloc[i + 1] - t_days.iloc[i - 1]
+            dy = y.iloc[i + 1] - y.iloc[i - 1]
+        elif i == 0:
+            dt = t_days.iloc[1] - t_days.iloc[0]
+            dy = y.iloc[1] - y.iloc[0]
         else:
-            d[i] = (y[i+1] - y[i-1]) / dt
+            dt = t_days.iloc[-1] - t_days.iloc[-2]
+            dy = y.iloc[-1] - y.iloc[-2]
+        deriv[i] = dy / dt if dt != 0 else np.nan
+
+    return pd.Series(deriv, name=f"d{col}/dt")
+
     # endpoints: forward/backward
     dt0 = t_days[1] - t_days[0]
     if dt0 != 0:
