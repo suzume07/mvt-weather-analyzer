@@ -191,7 +191,7 @@ for k in rounding_levels:
 
 
 summary_df = pd.DataFrame(summary_rows)
-st.markdown("** Bảng so sánh ảnh hưởng của các mức làm tròn:**")
+st.markdown(" Bảng so sánh ảnh hưởng của các mức làm tròn:")
 st.dataframe(summary_df)
 
 #  SLIDER LÀM TRÒN
@@ -200,7 +200,7 @@ st.subheader(" Minh họa trực quan mức độ làm tròn dữ liệu")
 
 round_options = {
     "Đến hàng chục": -1,
-    "0 chữ số (nguyên)": 0,
+    "Đến hàng đơn vị": 0,
     "1 chữ số sau dấu phẩy": 1,
     "2 chữ số sau dấu phẩy": 2,
     "3 chữ số sau dấu phẩy": 3
