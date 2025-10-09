@@ -9,7 +9,6 @@ import requests
 # ================================
 
 st.set_page_config(page_title="Weather MVT Analyzer", layout="wide")
-
 st.title("🌤 ỨNG DỤNG PHÂN TÍCH DỮ LIỆU THỜI TIẾT THEO ĐỊNH LÝ GIÁ TRỊ TRUNG BÌNH (MVT)")
 st.markdown("---")
 
@@ -28,6 +27,7 @@ def get_weather_data(city="Hanoi", api_key=None):
     if resp.status_code != 200:
         st.error(f"Lỗi truy xuất API: {resp.status_code} — {resp.text}")
         return None
+
     data = resp.json()
     records = []
     for item in data["list"]:
@@ -40,6 +40,7 @@ def get_weather_data(city="Hanoi", api_key=None):
     df = pd.DataFrame(records)
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     df = df.sort_values("timestamp").reset_index(drop=True)
+    df["timestamp_days"] = (df["timestamp"] - df["timestamp"].iloc[0]).dt.total_seconds() / 86400.0
     return df
 
 
@@ -48,7 +49,6 @@ def get_weather_data(city="Hanoi", api_key=None):
 # ============================================================
 
 st.sidebar.header("🗂 NHẬP DỮ LIỆU")
-
 option = st.sidebar.radio(
     "Chọn nguồn dữ liệu:",
     ["Dữ liệu mẫu", "Tải file CSV", "Lấy trực tiếp từ API"],
@@ -57,11 +57,15 @@ option = st.sidebar.radio(
 
 if option == "Dữ liệu mẫu":
     df = pd.read_csv("data/sample_weather.csv")
+    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    df["timestamp_days"] = (df["timestamp"] - df["timestamp"].iloc[0]).dt.total_seconds() / 86400.0
 
 elif option == "Tải file CSV":
     uploaded = st.sidebar.file_uploader("Tải file CSV", type=["csv"])
     if uploaded is not None:
         df = pd.read_csv(uploaded)
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+        df["timestamp_days"] = (df["timestamp"] - df["timestamp"].iloc[0]).dt.total_seconds() / 86400.0
     else:
         st.warning("⛔ Vui lòng tải file CSV hoặc chọn dữ liệu khác.")
         st.stop()
@@ -79,7 +83,6 @@ else:
         st.info("Nhập thành phố và API key rồi bấm **Lấy dữ liệu**.")
         st.stop()
 
-df["timestamp"] = pd.to_datetime(df["timestamp"])
 st.subheader("📊 Dữ liệu đầu vào")
 st.dataframe(df.head())
 
@@ -105,48 +108,18 @@ st.subheader("🧮 Tính toán tốc độ thay đổi")
 
 df["slope"] = df[col].diff()
 df["derivative"] = (df[col].shift(-1) - df[col].shift(1)) / 2
-
 avg_slope = np.mean(df["slope"].dropna())
 st.success(f"📈 Tốc độ thay đổi trung bình của {col} ≈ {avg_slope:.3f}")
 
 # ============================================================
-# 5️⃣ PHÂN TÍCH THEO ĐỊNH LÝ GIÁ TRỊ TRUNG BÌNH (MVT)
+# 5️⃣ HÀM TÍNH TOÁN CHO MVT & ĐẠO HÀM
 # ============================================================
 
-st.subheader("📍 Phân tích theo Định lý Giá trị Trung bình (MVT)")
-
-results = []
-for i in range(1, len(df) - 1):
-    x1, x2 = df["timestamp"].iloc[i - 1], df["timestamp"].iloc[i]
-    f1, f2 = df[col].iloc[i - 1], df[col].iloc[i]
-    avg_rate = (f2 - f1)
-    c = (f2 - f1) / 2 + f1
-    results.append({
-        "Khoảng": f"[{x1.strftime('%H:%M')}, {x2.strftime('%H:%M')}]",
-        "Δf": round(f2 - f1, 3),
-        "Tốc độ TB": round(avg_rate, 3),
-        "Điểm MVT (xấp xỉ)": round(c, 3)
-    })
-
-mvt_df = pd.DataFrame(results)
-st.dataframe(mvt_df.head(10))
-
-# ============================================================
-# 6️⃣ GIẢI THÍCH & PHÂN TÍCH LÀM TRÒN DỮ LIỆU
-# ============================================================
-
-st.subheader("🧠 Giải thích & Phân tích làm tròn dữ liệu (0–3 chữ số)")
-
-# Chuẩn bị dữ liệu thời gian (tính theo ngày)
-t0 = df["timestamp"].iloc[0]
-df["timestamp_days"] = (df["timestamp"] - t0).dt.total_seconds() / 86400.0
-
-# ---- Hàm tính đạo hàm xấp xỉ ----
-def compute_derivative_series(df_local, col_name):
-    t_days = df_local["timestamp_days"]
-    y = df_local[col_name]
-    n = len(df_local)
-    d = np.zeros(n)
+def compute_derivative_series(df, col):
+    t_days = df["timestamp_days"]
+    y = df[col]
+    n = len(df)
+    deriv = np.zeros(n)
     for i in range(n):
         if 0 < i < n - 1:
             dt = t_days.iloc[i + 1] - t_days.iloc[i - 1]
@@ -157,13 +130,12 @@ def compute_derivative_series(df_local, col_name):
         else:
             dt = t_days.iloc[-1] - t_days.iloc[-2]
             dy = y.iloc[-1] - y.iloc[-2]
-        d[i] = dy / dt if dt != 0 else np.nan
-    return pd.Series(d, name=f"d{col_name}/dt")
+        deriv[i] = dy / dt if dt != 0 else np.nan
+    return pd.Series(deriv, name=f"d{col}/dt")
 
-# ---- Hàm đếm số khoảng MVT ----
 def count_mvt_intervals(df_local, col_name, deriv_series):
-    t0 = df_local["timestamp"].iloc[0]
-    t_days = (df_local["timestamp"] - t0).dt.total_seconds() / 86400.0
+    t0 = df_local['timestamp'].iloc[0]
+    t_days = (df_local['timestamp'] - t0).dt.total_seconds() / 86400.0
     y = df_local[col_name].to_numpy(dtype=float)
     n = len(y)
     count = 0
@@ -179,11 +151,16 @@ def count_mvt_intervals(df_local, col_name, deriv_series):
             count += 1
     return count
 
-# ---- So sánh 4 mức làm tròn ----
+# ============================================================
+# 6️⃣ PHÂN TÍCH LÀM TRÒN DỮ LIỆU (CÓ SLIDER)
+# ============================================================
+
+st.subheader("🧠 Ảnh hưởng của việc làm tròn dữ liệu đến đạo hàm & MVT")
+
 rounding_levels = [0, 1, 2, 3]
 deriv_orig = compute_derivative_series(df, col)
-
 summary_rows = []
+
 for k in rounding_levels:
     df_r = df.copy()
     df_r[col] = df_r[col].round(k)
@@ -196,10 +173,7 @@ for k in rounding_levels:
         sign_changes = int(np.sum((np.sign(deriv_orig[mask]) * np.sign(deriv_r[mask])) < 0))
         sign_change_pct = float(sign_changes / mask.sum() * 100.0)
     else:
-        mae = np.nan
-        max_err = np.nan
-        sign_changes = 0
-        sign_change_pct = np.nan
+        mae, max_err, sign_changes, sign_change_pct = np.nan, np.nan, 0, np.nan
 
     mvt_count_orig = count_mvt_intervals(df, col, deriv_orig)
     mvt_count_round = count_mvt_intervals(df_r, col, deriv_r)
@@ -207,36 +181,47 @@ for k in rounding_levels:
     summary_rows.append({
         "Làm tròn (chữ số)": k,
         "MAE đạo hàm": mae,
-        "Max error": max_err,
-        "% đổi dấu đạo hàm": round(sign_change_pct, 2) if not np.isnan(sign_change_pct) else np.nan,
+        "Max err đạo hàm": max_err,
+        "% đổi dấu đạo hàm": round(sign_change_pct, 2),
         "Số khoảng MVT (gốc)": mvt_count_orig,
         "Số khoảng MVT (làm tròn)": mvt_count_round
     })
 
 summary_df = pd.DataFrame(summary_rows)
-st.markdown("**📋 Bảng so sánh tóm tắt ảnh hưởng của làm tròn**")
+st.markdown("**Bảng so sánh ảnh hưởng của làm tròn:**")
 st.dataframe(summary_df)
 
-# ---- Chi tiết từng mức làm tròn ----
-for k in rounding_levels:
-    with st.expander(f"Chi tiết: làm tròn {k} chữ số sau dấu phẩy"):
-        df_r = df.copy()
-        df_r[col] = df_r[col].round(k)
-        deriv_r = compute_derivative_series(df_r, col)
+# 🎚️ Thêm phần slider để xem trực quan ảnh hưởng của làm tròn
+st.markdown("---")
+st.subheader("🎚️ Minh họa trực quan mức làm tròn")
 
-        fig, axes = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
-        axes[0].plot(df["timestamp"], df[col], marker="o", label="Gốc", alpha=0.8)
-        axes[0].plot(df_r["timestamp"], df_r[col], marker="x", linestyle="--", label=f"Làm tròn {k}", alpha=0.9)
-        axes[0].set_title(f"Dữ liệu gốc vs làm tròn ({k} chữ số)")
-        axes[0].legend()
+round_level = st.slider("Chọn mức làm tròn dữ liệu:", 0, 3, 1, step=1)
+df_rounded = df.copy()
+df_rounded[col] = df_rounded[col].round(round_level)
 
-        axes[1].plot(df["timestamp"], deriv_orig, marker="o", label="Đạo hàm gốc")
-        axes[1].plot(df_r["timestamp"], deriv_r, marker="x", linestyle="--", label=f"Đạo hàm làm tròn {k}")
-        axes[1].set_title("Đạo hàm xấp xỉ (value/day)")
-        axes[1].legend()
-        plt.tight_layout()
-        st.pyplot(fig)
+# ✅ Thêm tùy chọn hiển thị đạo hàm
+show_derivative = st.checkbox("Hiển thị đạo hàm (tốc độ thay đổi) trên biểu đồ", value=False)
 
+fig2, ax2 = plt.subplots(figsize=(10, 4))
+ax2.plot(df["timestamp"], df[col], label="Dữ liệu gốc", alpha=0.7)
+ax2.plot(df_rounded["timestamp"], df_rounded[col], "--", label=f"Làm tròn {round_level} chữ số", color="orange")
+
+if show_derivative:
+    deriv_orig_plot = compute_derivative_series(df, col)
+    deriv_round_plot = compute_derivative_series(df_rounded, col)
+    ax2.plot(df["timestamp"], deriv_orig_plot, "g-", alpha=0.5, label="Đạo hàm (gốc)")
+    ax2.plot(df["timestamp"], deriv_round_plot, "r--", alpha=0.5, label="Đạo hàm (làm tròn)")
+
+ax2.set_title("Ảnh hưởng của việc làm tròn dữ liệu đến biến thiên & đạo hàm")
+ax2.set_xlabel("Thời gian")
+ax2.set_ylabel(col)
+ax2.legend()
+st.pyplot(fig2)
+
+st.caption("""
+Kéo thanh trượt để thấy mức độ dữ liệu bị làm tròn ảnh hưởng đến biến thiên và tốc độ thay đổi (đạo hàm).
+Việc làm tròn quá lớn khiến dữ liệu bị mất chi tiết, đạo hàm dao động mạnh hơn, gây sai lệch khi phân tích hoặc dự báo.
+""")
 # ============================================================
 # 🔎 Minh họa công thức xấp xỉ tuyến tính
 # ============================================================
