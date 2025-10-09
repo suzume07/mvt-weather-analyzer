@@ -4,16 +4,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import requests
 
-# ================================
-# 🌤 ỨNG DỤNG PHÂN TÍCH DỮ LIỆU THỜI TIẾT THEO ĐỊNH LÝ GIÁ TRỊ TRUNG BÌNH (MVT)
-# ================================
-
 st.set_page_config(page_title="Phân tích dữ liệu thời tiết MVT", layout="wide")
 st.title("PHÂN TÍCH DỮ LIỆU THỜI TIẾT ỨNG DỤNG ĐỊNH LÝ GIÁ TRỊ TRUNG BÌNH (MVT)")
 st.markdown("---")
 
 # ============================================================
-# 1. HÀM LẤY DỮ LIỆU
+# HÀM LẤY DỮ LIỆU
 # ============================================================
 
 def get_weather_data(city="Hanoi", api_key=None):
@@ -42,10 +38,16 @@ def get_weather_data(city="Hanoi", api_key=None):
     df = df.sort_values("timestamp").reset_index(drop=True)
     df["timestamp_days"] = (df["timestamp"] - df["timestamp"].iloc[0]).dt.total_seconds() / 86400.0
     return df
+df.rename(columns={
+    "timestamp": "Thời gian",
+    "temperature": "Nhiệt độ",
+    "humidity": "Độ ẩm",
+    "precip": "Lượng mưa"
+}, inplace=True)
 
 
 # ============================================================
-# 2. NHẬP DỮ LIỆU
+# 1. NHẬP DỮ LIỆU
 # ============================================================
 
 st.sidebar.header("NHẬP DỮ LIỆU VÀO ỨNG DỤNG")
@@ -83,14 +85,14 @@ else:
         st.info("Nhập tên thành phố và API key, sau đó nhấn **Lấy dữ liệu**.")
         st.stop()
 
-st.subheader(" 1.Dữ liệu đầu vào")
+st.subheader(" 1. Dữ liệu đầu vào")
 st.dataframe(df.head())
 
 # ============================================================
-# 3. BIỂU ĐỒ MINH HỌA
+# 2. BIỂU ĐỒ MINH HỌA
 # ============================================================
 
-st.subheader(" 2.Biểu đồ diễn biến các yếu tố thời tiết")
+st.subheader(" 2. Biểu đồ diễn biến các yếu tố thời tiết")
 col = st.selectbox("Chọn yếu tố để phân tích:", ["temperature", "humidity", "precip"], index=0)
 
 fig, ax = plt.subplots(figsize=(10, 4))
@@ -101,10 +103,10 @@ ax.legend()
 st.pyplot(fig)
 
 # ============================================================
-# 4. TÍNH TOÁN CƠ BẢN
+# 3. TÍNH TOÁN CƠ BẢN
 # ============================================================
 
-st.subheader(" 3.Phân tích tốc độ thay đổi cơ bản")
+st.subheader(" 3. Phân tích tốc độ thay đổi cơ bản")
 
 df["slope"] = df[col].diff()
 df["derivative"] = (df[col].shift(-1) - df[col].shift(1)) / 2
@@ -112,7 +114,7 @@ avg_slope = np.mean(df["slope"].dropna())
 st.success(f"Tốc độ thay đổi trung bình của {col} ≈ {avg_slope:.3f}")
 
 # ============================================================
-# 5. CÁC HÀM PHỤ TRỢ CHO MVT
+# CÁC HÀM PHỤ 
 # ============================================================
 
 def compute_derivative_series(df, col):
@@ -152,10 +154,10 @@ def count_mvt_intervals(df_local, col_name, deriv_series):
     return count
 
 # ============================================================
-# 6. ẢNH HƯỞNG CỦA LÀM TRÒN DỮ LIỆU
+# 4. ẢNH HƯỞNG CỦA LÀM TRÒN DỮ LIỆU
 # ============================================================
 
-st.subheader(" 4.Ảnh hưởng của việc làm tròn dữ liệu đến đạo hàm & giá trị trung bình")
+st.subheader(" 4. Ảnh hưởng của việc làm tròn dữ liệu đến đạo hàm & giá trị trung bình")
 
 rounding_levels = [-1, 0, 1, 2, 3]  # -1 = làm tròn đến hàng chục
 deriv_orig = compute_derivative_series(df, col)
@@ -196,7 +198,7 @@ st.dataframe(summary_df)
 
 #  SLIDER 
 st.markdown("---")
-st.subheader(" 5.Minh họa trực quan mức độ làm tròn dữ liệu")
+st.subheader(" 5. Minh họa trực quan mức độ làm tròn dữ liệu")
 
 round_options = {
     "Đến hàng chục": -1,
@@ -227,7 +229,7 @@ if show_derivative:
 
 ax2.set_title("Ảnh hưởng của việc làm tròn dữ liệu đến biến thiên và đạo hàm")
 ax2.set_xlabel("Thời gian")
-ax2.set_ylabel(col)
+ax2.set_ylabel("Nhiệt độ")
 ax2.legend()
 st.pyplot(fig2)
 
@@ -237,11 +239,11 @@ Làm tròn quá lớn khiến dữ liệu mất chi tiết, đạo hàm bị dao
 """)
 
 # ============================================================
-#  MINH HỌA CÔNG THỨC XẤP XỈ TUYẾN TÍNH
+#  6. MINH HỌA CÔNG THỨC XẤP XỈ TUYẾN TÍNH
 # ============================================================
 
 st.markdown("---")
-st.subheader("6.Minh họa công thức xấp xỉ tuyến tính f(b) ≈ f(a) + f'(a)(x-a)")
+st.subheader("6. Minh họa công thức xấp xỉ tuyến tính f(b) ≈ f(a) + f'(a)(x-a)")
 
 max_i = max(0, len(df) - 2)
 idx = st.number_input("Chọn chỉ số i để minh họa (xét khoảng i → i+1):", min_value=0, max_value=max_i, value=0, step=1)
