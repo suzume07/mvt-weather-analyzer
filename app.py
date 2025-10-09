@@ -48,7 +48,7 @@ def get_weather_data(city="Hanoi", api_key=None):
 # 2. NHẬP DỮ LIỆU
 # ============================================================
 
-st.sidebar.header("🗂 NHẬP DỮ LIỆU VÀO ỨNG DỤNG")
+st.sidebar.header("NHẬP DỮ LIỆU VÀO ỨNG DỤNG")
 option = st.sidebar.radio(
     "Chọn nguồn dữ liệu:",
     ["Dữ liệu mẫu", "Tải file CSV", "Lấy dữ liệu trực tiếp từ API"],
@@ -61,7 +61,7 @@ if option == "Dữ liệu mẫu":
     df["timestamp_days"] = (df["timestamp"] - df["timestamp"].iloc[0]).dt.total_seconds() / 86400.0
 
 elif option == "Tải file CSV":
-    uploaded = st.sidebar.file_uploader("📤 Tải lên file CSV", type=["csv"])
+    uploaded = st.sidebar.file_uploader("Tải lên file CSV", type=["csv"])
     if uploaded is not None:
         df = pd.read_csv(uploaded)
         df["timestamp"] = pd.to_datetime(df["timestamp"])
@@ -73,7 +73,7 @@ elif option == "Tải file CSV":
 else:
     city = st.sidebar.text_input(" Nhập tên thành phố:", "Hanoi")
     api_key = st.sidebar.text_input(" Nhập API key OpenWeatherMap:", type="password")
-    if st.sidebar.button("📡 Lấy dữ liệu"):
+    if st.sidebar.button("Lấy dữ liệu"):
         df = get_weather_data(city, api_key)
         if df is not None:
             st.success(f" Đã tải thành công dữ liệu thời tiết của **{city}**!")
@@ -194,7 +194,7 @@ summary_df = pd.DataFrame(summary_rows)
 st.markdown(" Bảng so sánh ảnh hưởng của các mức làm tròn:")
 st.dataframe(summary_df)
 
-#  SLIDER LÀM TRÒN
+#  SLIDER 
 st.markdown("---")
 st.subheader(" 5.Minh họa trực quan mức độ làm tròn dữ liệu")
 
