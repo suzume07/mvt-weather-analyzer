@@ -150,8 +150,8 @@ with st.expander("Giải thích chi tiết"):
     st.latex(r"v_{tb} = \frac{f(t_{i+1}) - f(t_i)}{t_{i+1} - t_i}")
     st.markdown("""
     Trong đó:""")
-     st.latex( f(t_i) ) st.mark(""": giá trị của đại lượng (ví dụ: **nhiệt độ**) tại thời điểm""") st.latex( t_i )  
-     st.latex( f(t_{i+1}) ) st.mark(""": giá trị tại thời điểm kế tiếp  
+     st.latex( f(t_i) )st.markdown(""": giá trị của đại lượng (ví dụ: **nhiệt độ**) tại thời điểm""") st.latex( t_i )  
+     st.latex( f(t_{i+1}))st.markdown(""": giá trị tại thời điểm kế tiếp  
      Biểu thức cho biết **độ biến thiên trung bình của đại lượng trên mỗi đơn vị thời gian.**
 
     **Cách hiểu:**  
