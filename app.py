@@ -32,10 +32,10 @@ def get_weather_data(city="Hanoi", api_key=None):
     records = []
     for item in data["list"]:
         records.append({
-            "Thoi_diem": item["dt_txt"],
-            "Nhiet_do": item["main"]["temp"],
-            "Do_am": item["main"]["humidity"],
-            "Luong_mua": item.get("rain", {}).get("3h", 0)
+            "timestamp": item["dt_txt"],
+            "temperature": item["main"]["temp"],
+            "humidity": item["main"]["humidity"],
+            "precip": item.get("rain", {}).get("3h", 0)
         })
     df = pd.DataFrame(records)
     df["timestamp"] = pd.to_datetime(df["timestamp"])
