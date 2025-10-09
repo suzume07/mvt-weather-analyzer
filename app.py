@@ -179,7 +179,7 @@ for k in rounding_levels:
     mvt_count_round = count_mvt_intervals(df_r, col, deriv_r)
 
     summary_rows.append({
-        "Mức làm tròn (chữ số)": k,
+        "Mức làm tròn (đến chữ số thứ n sau dấu phẩy)": k,
         "Sai số trung bình đạo hàm": mae,
         "Sai số lớn nhất đạo hàm": max_err,
         "% thay đổi dấu đạo hàm": round(sign_change_pct, 2),
