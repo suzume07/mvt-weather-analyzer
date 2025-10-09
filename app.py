@@ -90,7 +90,8 @@ else:
     else:
         st.info("Nhập tên thành phố và API key, sau đó nhấn **Lấy dữ liệu**.")
         st.stop()
-
+# Đổi tên timestamp_days
+df_display = df.rename(columns={"timestamp_days": "Thời gian (ngày)"})
 st.subheader(" 1. Dữ liệu đầu vào")
 st.dataframe(df.head())
 
