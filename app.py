@@ -298,7 +298,7 @@ if show_derivative:
 
 ax2.set_title("Ảnh hưởng của việc làm tròn dữ liệu đến biến thiên và đạo hàm")
 ax2.set_xlabel("Thời gian")
-ax2.set_ylabel("Nhiệt độ")
+ax2.set_ylabel(col)
 ax2.legend()
 st.pyplot(fig2)
 
