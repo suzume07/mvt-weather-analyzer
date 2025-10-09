@@ -124,32 +124,36 @@ st.dataframe(df[["timestamp", col, "delta", "dt_hours", "slope_per_hour"]].head(
 
 # Hiển thị tóm tắt thống kê
 st.markdown("**Thống kê tóm tắt:**")
-st.markdown(f"- Trung bình (°C/giờ): **{avg_per_hour:.4f}**")
+st.markdown(f"- Trung bình (°C/giờ): **{avg_per_hour:.6f}**")
 st.markdown(f"- Độ lệch chuẩn (°C/giờ): **{std_per_hour:.4f}**")
 st.markdown(f"- Sai số tuyệt đối trung bình (|Δ|): **{mae_per_hour:.4f}**")
-st.markdown(f"- Tương đương (°C/ngày): **{avg_per_day:.4f}**")
+st.markdown(f"- Tương đương (°C/ngày): **{avg_per_day:.6f}**")
 
 # Diễn giải
 if np.isnan(avg_per_hour):
     st.warning("Không đủ dữ liệu để tính tốc độ thay đổi.")
 else:
     if abs(avg_per_hour) < 1e-6:
-        trend = "không có xu hướng rõ ràng (gần như ổn định)"
+        trend = "gần như ổn định"
     elif avg_per_hour > 0:
-        trend = f"tăng trung bình {avg_per_hour:.4f} °C mỗi giờ (~{avg_per_day:.3f} °C/ngày)"
+        trend = f"tăng trung bình {avg_per_hour:.4f} °C mỗi giờ (~{avg_per_day:.6f} °C/ngày)"
     else:
-        trend = f"giảm trung bình {abs(avg_per_hour):.4f} °C mỗi giờ (~{abs(avg_per_day):.3f} °C/ngày)"
-    st.success(f"→ Nhìn chung, {col} có xu hướng **{trend}** trong giai đoạn quan sát.")
+        trend = f"giảm trung bình {abs(avg_per_hour):.4f} °C mỗi giờ (~{abs(avg_per_day):.6f} °C/ngày)"
+    st.success(f"→ Nhìn chung, {"Nhiệt độ"} có xu hướng **{trend}** trong giai đoạn quan sát.")
 
 # Giải thích 
 with st.expander("Giải thích chi tiết"):
     st.markdown("""
     **Ý nghĩa:**  
     - Tốc độ thay đổi trung bình được tính theo công thức  
-      \\[
-      v_{tb} = \\frac{f(t_{i+1}) - f(t_i)}{t_{i+1} - t_i}
-      \\]
+      st.latex(r"v_{tb} = \frac{f(t_{i+1}) - f(t_i)}{t_{i+1} - t_i}")
       nghĩa là *độ biến thiên trung bình của đại lượng trên mỗi đơn vị thời gian*.
+        st.markdown("""
+    Trong đó:
+    - \( f(t_i) \): giá trị của đại lượng (ví dụ: nhiệt độ) tại thời điểm \( t_i \)  
+    - \( f(t_{i+1}) \): giá trị tại thời điểm kế tiếp  
+    - Biểu thức cho biết **độ biến thiên trung bình của đại lượng trên mỗi đơn vị thời gian.**
+    """)
 
     **Cách hiểu:**  
     - Nếu kết quả > 0 → đại lượng đang tăng theo thời gian.  
@@ -159,12 +163,7 @@ with st.expander("Giải thích chi tiết"):
     **Ví dụ:**  
     Nếu tốc độ trung bình là -0.20 °C/giờ, nghĩa là cứ mỗi giờ nhiệt độ giảm trung bình 0.20 °C  
     → tương đương giảm khoảng 4.8 °C mỗi ngày.
-
-    **Lưu ý:**  
-    - Kết quả hiển thị `0.000` có thể do làm tròn khi giá trị rất nhỏ.  
-    - Có thể tăng số chữ số hiển thị (ví dụ `.4f` hoặc `.6f`) để xem chi tiết hơn.
-    """)
-
+    
 # ============================================================
 # CÁC HÀM PHỤ 
 # ============================================================
