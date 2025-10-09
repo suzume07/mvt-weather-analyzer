@@ -120,7 +120,7 @@ avg_per_day = avg_per_hour * 24
 
 # Hiển thị bảng giá trị đầu tiên (giúp giáo viên thấy rõ cách tính)
 st.markdown("**Bảng giá trị và tốc độ thay đổi từng khoảng:**")
-st.dataframe(df[["timestamp", col, "delta", "dt_hours", "slope_per_hour"]].head(10))
+st.dataframe(df[["Thời điểm","Nhiệt độ", "Độ chênh lệch", "Độ chênh lệch/giờ", "Tốc độ chênh lệch"]].head(10))
 
 # Hiển thị tóm tắt thống kê
 st.markdown("**Thống kê tóm tắt:**")
