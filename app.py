@@ -36,7 +36,7 @@ def get_weather_data(city="Hanoi", api_key=None):
     df = pd.DataFrame(records)
     df["Thời điểm"] = pd.to_datetime(df["Thời điểm"])
     df = df.sort_values("Thời điểm").reset_index(drop=True)
-    df["timestamp_days"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
+    df["Thời gian/ngày"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
     return df
 
 # ============================================================
@@ -59,7 +59,7 @@ if option == "Dữ liệu mẫu":
         "precip": "Lượng mưa"
     }, inplace=True)
     df["Thời điểm"] = pd.to_datetime(df["Thời điểm"])
-    df["timestamp_days"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
+    df["Thời gian/ngày"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
 
 elif option == "Tải file CSV":
     uploaded = st.sidebar.file_uploader("Tải lên file CSV", type=["csv"])
@@ -73,8 +73,8 @@ elif option == "Tải file CSV":
             "timestamp_days": "Thời gian/ngày"
         }, inplace=True)
         df["Thời điểm"] = pd.to_datetime(df["Thời điểm"])
-        df["timestamp_days"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
-        df_display = df.rename(columns={"timestamp_days": "Thời gian (ngày)"})
+        df["Thời gian/ngày"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
+        df_display = df.rename(columns={"timestamp_days": "Thời gian/ngày"})
     else:
         st.warning(" Vui lòng tải file CSV hoặc chọn dữ liệu khác.")
         st.stop()
