@@ -79,34 +79,34 @@ elif option == "Tải file CSV":
         st.warning(" Vui lòng tải file CSV hoặc chọn dữ liệu khác.")
         st.stop()
 
-elif == "Lấy dữ liệu trực tiếp từ API":
-        city = st.sidebar.text_input(" Nhập tên thành phố:", "Hanoi")
-        api_key = st.sidebar.text_input(" Nhập API key OpenWeatherMap:", type="password")
+elif option == "Lấy dữ liệu trực tiếp từ API":
+    city = st.sidebar.text_input(" Nhập tên thành phố:", "Hanoi")
+    api_key = st.sidebar.text_input(" Nhập API key OpenWeatherMap:", type="password")
 
-        # Lưu API key và dữ liệu vào session_state để không bị mất khi reload
-        if "api_key" not in st.session_state:
-            st.session_state.api_key = api_key
-        if "df_api" not in st.session_state:
-            st.session_state.df_api = None
-        
-        if st.sidebar.button("Lấy dữ liệu"):
-            df_api = get_weather_data(city, api_key)
-            if df_api is not None:
-                st.session_state.df_api = df_api
-                st.session_state.api_key = api_key
-                st.success(f" Đã tải thành công dữ liệu thời tiết của **{city}**!")
-            else:
-            st.stop()
+    # Lưu API key và dữ liệu vào session_state để không bị mất khi reload
+    if "api_key" not in st.session_state:
+        st.session_state.api_key = api_key
+    if "df_api" not in st.session_state:
+        st.session_state.df_api = None
 
-        # Nếu đã có dữ liệu trong session, dùng lại luôn (không cần nhập lại)
-        if st.session_state.df_api is not None:
-            df = st.session_state.df_api
-            st.info(f"Dữ liệu đang hiển thị cho **{city}** (nguồn API).")
-        else:
-            st.warning("Chưa có dữ liệu API. Nhập API key và nhấn **Lấy dữ liệu**.")
-            st.stop()
-    st.subheader(" 1. Dữ liệu đầu vào")
-    st.dataframe(df.head(24))
+    if st.sidebar.button("Lấy dữ liệu"):
+        df_api = get_weather_data(city, api_key)
+    if df_api is not None:
+        st.session_state.df_api = df_api
+        st.session_state.api_key = api_key
+        st.success(f" Đã tải thành công dữ liệu thời tiết của **{city}**!")
+    else:
+        st.stop()
+
+    # Nếu đã có dữ liệu trong session, dùng lại luôn (không cần nhập lại)
+    if st.session_state.df_api is not None:
+        df = st.session_state.df_api
+        st.info(f"Dữ liệu đang hiển thị cho **{city}** (nguồn API).")
+    else:
+        st.warning("Chưa có dữ liệu API. Nhập API key và nhấn **Lấy dữ liệu**.")
+        st.stop()
+st.subheader(" 1. Dữ liệu đầu vào")
+st.dataframe(df.head(24))
 
 # ============================================================
 # 2. BIỂU ĐỒ MINH HỌA
