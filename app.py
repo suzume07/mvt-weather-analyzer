@@ -92,7 +92,7 @@ else:
         st.info("Nhập tên thành phố và API key, sau đó nhấn **Lấy dữ liệu**.")
         st.stop()
 st.subheader(" 1. Dữ liệu đầu vào")
-st.dataframe(df.head())
+st.dataframe()
 
 # ============================================================
 # 2. BIỂU ĐỒ MINH HỌA
