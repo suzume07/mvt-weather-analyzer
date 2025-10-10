@@ -79,7 +79,7 @@ elif option == "Tải file CSV":
         st.warning(" Vui lòng tải file CSV hoặc chọn dữ liệu khác.")
         st.stop()
 
-elif == "Lấy dữ liệu trực tiếp từ API":
+else == "Lấy dữ liệu trực tiếp từ API":
     city = st.sidebar.text_input(" Nhập tên thành phố:", "Hanoi")
     api_key = st.sidebar.text_input(" Nhập API key OpenWeatherMap:", type="password")
 
