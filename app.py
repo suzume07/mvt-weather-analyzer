@@ -123,9 +123,26 @@ std_per_hour = df["Độ chênh lệch/giờ"].dropna().std()
 mae_per_hour = np.abs(df["Độ chênh lệch/giờ"].dropna()).mean()
 
 avg_per_day = avg_per_hour * 24
-q1=df["Độ chênh lệch/giờ".dropna().quantile(0.25)
-q2=df["Độ chênh lệch/giờ".dropna().quantile(0.5)
-q3=df["Độ chênh lệch/giờ".dropna().quantile(0.75)
+q1=df["Độ chênh lệch/giờ"].dropna().quantile(0.25)
+q2=df["Độ chênh lệch/giờ"].dropna().quantile(0.5)
+q3=df["Độ chênh lệch/giờ"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.dropna().quantile(0.75)
 
 st.markdown("**Bảng giá trị và tốc độ thay đổi từng khoảng:**")
 st.dataframe(df[["Thời điểm", col, "Độ chênh lệch", "Độ chênh lệch/giờ"]].head(24))
