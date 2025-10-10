@@ -91,20 +91,20 @@ elif option == "Lấy dữ liệu trực tiếp từ API":
 
     if st.sidebar.button("Lấy dữ liệu"):
         df_new = get_weather_data(city, api_key)
-    if df_new is not None:
+    if df_new is None:
+        st.stop()
+    else:
         st.session_state.df_api = df_new
         st.session_state.api_key = api_key
         st.success(f" Đã tải thành công dữ liệu thời tiết của **{city}**!")
-    else:
-        st.stop()
 
     # Nếu đã có dữ liệu trong session, dùng lại luôn (không cần nhập lại)
-    if st.session_state.df_api is not None:
-        df = st.session_state.df_api
-        st.info(f"Dữ liệu đang hiển thị cho **{city}** (nguồn API).")
-    else:
+    if st.session_state.df_api is None:
         st.warning("Chưa có dữ liệu API. Nhập API key và nhấn **Lấy dữ liệu**.")
         st.stop()
+    else:
+        df = st.session_state.df_api
+        st.info(f"Dữ liệu đang hiển thị cho **{city}** (nguồn API).")
 st.subheader(" 1. Dữ liệu đầu vào")
 st.dataframe(df.head(24))
 
