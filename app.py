@@ -115,8 +115,8 @@ st.pyplot(fig)
 st.subheader("3. Phân tích tốc độ thay đổi")
 
 df["dt_hours"] = df["Thời điểm"].diff().dt.total_seconds() / 3600.0
-df["Chênh lệch"] = df[col].diff()
-df["Độ chênh lệch/giờ"] = df["Chênh lệch"] / df["dt_hours"]
+df["Độ chênh lệch"] = df[col].diff()
+df["Độ chênh lệch/giờ"] = df["Độ chênh lệch"] / df["dt_hours"]
 
 avg_per_hour = df["Độ chênh lệch/giờ"].dropna().mean()
 std_per_hour = df["Độ chênh lệch/giờ"].dropna().std()
@@ -125,7 +125,7 @@ mae_per_hour = np.abs(df["Độ chênh lệch/giờ"].dropna()).mean()
 avg_per_day = avg_per_hour * 24
 
 st.markdown("**Bảng giá trị và tốc độ thay đổi từng khoảng:**")
-st.dataframe(df[["Thời điểm", col, "Chênh lệch", "Độ chênh lệch/giờ"]].head(10))
+st.dataframe(df[["Thời điểm", col, "Độ chênh lệch", "Độ chênh lệch/giờ"]].head(24))
 
 st.markdown("**Thống kê tóm tắt:**")
 st.markdown(f"- Trung bình (°C/giờ): **{avg_per_hour:.6f}**")
