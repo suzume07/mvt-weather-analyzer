@@ -91,7 +91,7 @@ elif option == "Lấy dữ liệu trực tiếp từ API":
 
     if st.sidebar.button("Lấy dữ liệu"):
         df_new = get_weather_data(city, api_key)
-    if df_new None:
+    if df_new is not None:
         st.session_state.df_api = df_new
         st.session_state.api_key = api_key
         st.success(f" Đã tải thành công dữ liệu thời tiết của **{city}**!")
