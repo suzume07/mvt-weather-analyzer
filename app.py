@@ -79,7 +79,7 @@ elif option == "Tải file CSV":
         st.warning(" Vui lòng tải file CSV hoặc chọn dữ liệu khác.")
         st.stop()
 
-elif option == "Lấy dữ liệu trực tiếp từ API":
+elif == "Lấy dữ liệu trực tiếp từ API":
     city = st.sidebar.text_input(" Nhập tên thành phố:", "Hanoi")
     api_key = st.sidebar.text_input(" Nhập API key OpenWeatherMap:", type="password")
 
@@ -90,9 +90,9 @@ elif option == "Lấy dữ liệu trực tiếp từ API":
         st.session_state.df_api = None
 
     if st.sidebar.button("Lấy dữ liệu"):
-        df_api = get_weather_data(city, api_key)
-    if df_api is not None:
-        st.session_state.df_api = df_api
+        df_new = get_weather_data(city, api_key)
+    if df_new None:
+        st.session_state.df_api = df_new
         st.session_state.api_key = api_key
         st.success(f" Đã tải thành công dữ liệu thời tiết của **{city}**!")
     else:
