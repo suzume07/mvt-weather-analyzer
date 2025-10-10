@@ -135,9 +135,9 @@ st.markdown(f"- Trung bình độ chênh lệch mỗi giờ  (°C/giờ): **{avg
 st.markdown(f"- Độ lệch chuẩn (°C/giờ): **{std_per_hour:.4f}**")
 st.markdown(f"- Sai số tuyệt đối trung bình (|Δ|): **{mae_per_hour:.4f}**")
 st.markdown(f"- Tương đương (°C/ngày): **{avg_per_day:.6f}**")
-st.markdown(f"- Q1 (Phân vị thứ 25%): **{Q1:.6f}**")
-st.markdown(f"- Q2 (Trung vị): **{Q2:.6f}**")
-st.markdown(f"- Q3 (Phân vị thứ 75%): **{Q3:.6f}**")
+st.markdown(f"- Q1 (Tứ phân vị thứ 1): **{q1:.6f}**")
+st.markdown(f"- Q2 (Trung vị): **{q2:.6f}**")
+st.markdown(f"- Q3 (Tứ phân vị thứ 3): **{q3:.6f}**")
 
 
 if np.isnan(avg_per_hour):
