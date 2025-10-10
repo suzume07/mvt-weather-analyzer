@@ -123,15 +123,22 @@ std_per_hour = df["Độ chênh lệch/giờ"].dropna().std()
 mae_per_hour = np.abs(df["Độ chênh lệch/giờ"].dropna()).mean()
 
 avg_per_day = avg_per_hour * 24
+q1=df["Độ chênh lệch/giờ".dropna().quantile(0.25)
+q2=df["Độ chênh lệch/giờ".dropna().quantile(0.5)
+q3=df["Độ chênh lệch/giờ".dropna().quantile(0.75)
 
 st.markdown("**Bảng giá trị và tốc độ thay đổi từng khoảng:**")
 st.dataframe(df[["Thời điểm", col, "Độ chênh lệch", "Độ chênh lệch/giờ"]].head(24))
 
-st.markdown("**Thống kê tóm tắt:**")
-st.markdown(f"- Trung bình (°C/giờ): **{avg_per_hour:.6f}**")
+st.markdown("**Các số liệu của bảng dữ liệu trên:**")
+st.markdown(f"- Trung bình độ chênh lệch mỗi giờ  (°C/giờ): **{avg_per_hour:.6f}**")
 st.markdown(f"- Độ lệch chuẩn (°C/giờ): **{std_per_hour:.4f}**")
 st.markdown(f"- Sai số tuyệt đối trung bình (|Δ|): **{mae_per_hour:.4f}**")
 st.markdown(f"- Tương đương (°C/ngày): **{avg_per_day:.6f}**")
+st.markdown(f"- Q1 (Phân vị thứ 25%): **{Q1:.6f}**")
+st.markdown(f"- Q2 (Trung vị): **{Q2:.6f}**")
+st.markdown(f"- Q3 (Phân vị thứ 75%): **{Q3:.6f}**")
+
 
 if np.isnan(avg_per_hour):
     st.warning("Không đủ dữ liệu để tính tốc độ thay đổi.")
