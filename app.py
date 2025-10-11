@@ -82,21 +82,33 @@ elif option == "Tải file CSV":
 elif option == "Lấy dữ liệu trực tiếp từ API":
     city = st.sidebar.text_input(" Nhập tên thành phố:", "Hanoi")
     api_key = st.sidebar.text_input(" Nhập API key OpenWeatherMap:", type="password")
-
+    
     # Lưu API key và dữ liệu vào session_state để không bị mất khi reload
     if "api_key" not in st.session_state:
         st.session_state.api_key = api_key
     if "df_api" not in st.session_state:
         st.session_state.df_api = None
-
+    
     if st.sidebar.button("Lấy dữ liệu"):
         df_api = get_weather_data(city, api_key)
-    else:
+    if df_api is not None:
         st.session_state.df_api = df_api
         st.session_state.api_key = api_key
         st.success(f" Đã tải thành công dữ liệu thời tiết của **{city}**!")
-
-
+        df = pd.read_csv("get_weather_data")
+        df.rename(columns={
+            "timestamp": "Thời điểm",
+            "temperature": "Nhiệt độ",
+            "humidity": "Độ ẩm",
+            "precip": "Lượng mưa"
+        }, inplace=True)
+        df["Thời điểm"] = pd.to_datetime(df["Thời điểm"])
+        df["Thời gian/ngày"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
+        
+    else:
+        st.stop()    
+    
+    
 st.subheader(" 1. Dữ liệu đầu vào")
 st.dataframe(df.head(10))
 
