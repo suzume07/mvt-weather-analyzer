@@ -94,7 +94,7 @@ elif option == "Lấy dữ liệu trực tiếp từ API":
         st.session_state.api_key = ""
 
     city_input = st.sidebar.text_input("Nhập tên thành phố:", value=st.session_state.api_city)
-    api_key_input = st.sidebar.text_input("Nhập API key OpenWeatherMap:", type="password", value=st.session_state.api_key)
+    api_key_input = api_key = "bfaeabf86c3c5171027a65a979a9f491"
 
     if city_input != st.session_state.api_city:
         st.session_state.api_city = city_input
