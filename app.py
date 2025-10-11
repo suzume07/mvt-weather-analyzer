@@ -101,6 +101,13 @@ elif option == "Lấy dữ liệu trực tiếp từ API":
     else:
         st.error("Không thể tải dữ liệu, vui lòng kiểm tra api key.")
         st.stop()
+   
+    if st.session_state.df_api is not None:
+        df = st.session_state.df_api
+        st.info(f"Dữ liệu đang hiển thị cho **{city}** (nguồn API).")
+    else:
+        st.warning("Chưa có dữ liệu API. Nhập API key và nhấn **Lấy dữ liệu**.")
+        st.stop()
     
     
 st.subheader(" 1. Dữ liệu đầu vào")
