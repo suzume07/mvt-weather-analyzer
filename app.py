@@ -11,7 +11,7 @@ st.markdown("---")
 # ============================================================
 # HÀM LẤY DỮ LIỆU
 # ============================================================
-
+st.cache_data(show_spinner=True)
 def get_weather_data(city="Hanoi", api_key=None):
     """Lấy dữ liệu thời tiết 5 ngày (mỗi 3 giờ) từ OpenWeatherMap"""
     if not api_key:
