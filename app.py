@@ -9,9 +9,10 @@ st.title("PHÂN TÍCH DỮ LIỆU THỜI TIẾT ỨNG DỤNG ĐỊNH LÝ GIÁ TR
 st.markdown("---")
 
 # ============================================================
-# HÀM LẤY DỮ LIỆU
+# HÀM LẤY DỮ LIỆU (đã thêm cache)
 # ============================================================
-st.cache_data(show_spinner=True)
+
+@st.cache_data(show_spinner=True)
 def get_weather_data(city="Hanoi", api_key=None):
     """Lấy dữ liệu thời tiết 5 ngày (mỗi 3 giờ) từ OpenWeatherMap"""
     if not api_key:
@@ -74,25 +75,24 @@ elif option == "Tải file CSV":
         }, inplace=True)
         df["Thời điểm"] = pd.to_datetime(df["Thời điểm"])
         df["Thời gian/ngày"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
-        df_display = df.rename(columns={"timestamp_days": "Thời gian/ngày"})
     else:
-        st.warning(" Vui lòng tải file CSV hoặc chọn dữ liệu khác.")
+        st.warning("Vui lòng tải file CSV hoặc chọn dữ liệu khác.")
         st.stop()
 
 elif option == "Lấy dữ liệu trực tiếp từ API":
-    city = st.sidebar.text_input(" Nhập tên thành phố:", "Hanoi")
-    api_key = st.sidebar.text_input(" Nhập API key OpenWeatherMap:", type="password")
-        
+    city = st.sidebar.text_input("Nhập tên thành phố:", "Hanoi")
+    api_key = st.sidebar.text_input("Nhập API key OpenWeatherMap:", type="password")
+
     if st.sidebar.button("Lấy dữ liệu"):
         df = get_weather_data(city, api_key)
-    if df is not None:
-        st.success(f" Đã tải thành công dữ liệu thời tiết của **{city}**!")
+        if df is not None:
+            st.success(f"Đã tải thành công dữ liệu thời tiết của **{city}**! (có thể đã dùng dữ liệu từ cache)")
+        else:
+            st.error("Không thể tải dữ liệu, vui lòng kiểm tra API key.")
+            st.stop()
     else:
-        st.error("Không thể tải dữ liệu, vui lòng kiểm tra api key.")
+        st.info("Nhập tên thành phố và API key, sau đó nhấn **Lấy dữ liệu**.")
         st.stop()
-    
-    
-    
 st.subheader(" 1. Dữ liệu đầu vào")
 st.dataframe(df.head(10))
 
