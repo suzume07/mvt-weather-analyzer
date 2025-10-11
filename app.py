@@ -80,7 +80,7 @@ elif option == "Tải file CSV":
         st.stop()
 
 elif option == "Lấy dữ liệu trực tiếp từ API":
-    city = st.sidebar.text_input("Nhập tên thành phố:", city)
+    city = st.sidebar.text_input("Nhập tên thành phố:", "Hanoi")
     api_key = st.sidebar.text_input("Nhập API key OpenWeatherMap:", type="password")
 
     if st.sidebar.button("Lấy dữ liệu"):
