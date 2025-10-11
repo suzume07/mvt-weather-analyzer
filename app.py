@@ -98,7 +98,7 @@ elif option == "Lấy dữ liệu trực tiếp từ API":
 
 
 st.subheader(" 1. Dữ liệu đầu vào")
-st.dataframe(df.head(24))
+st.dataframe(df.head(10))
 
 # ============================================================
 # 2. BIỂU ĐỒ MINH HỌA
