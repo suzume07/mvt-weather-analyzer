@@ -85,7 +85,7 @@ elif option == "Lấy dữ liệu trực tiếp từ API":
     
     # Lưu API key và dữ liệu vào session_state để không bị mất khi reload
     if "api_key" not in st.session_state:
-        st.session_state.api_key = api_key
+        st.session_state.api_key = None
     if "df_api" not in st.session_state:
         st.session_state.df_api = None
     
@@ -95,6 +95,16 @@ elif option == "Lấy dữ liệu trực tiếp từ API":
         st.session_state.df_api = df_api
         st.session_state.api_key = api_key
         st.success(f" Đã tải thành công dữ liệu thời tiết của **{city}**!")
+    else:
+        st.error("Không thể tải dữ liệu, vui lòng kiểm tra api key.")
+        st.stop()
+
+if st.session_state.df_api is not None:
+    df = st.session_state.df_api
+    st.info(f"Dữ liệu đang hiển thị cho **{city}** (nguồn API).")
+else:
+    st.warning("Chưa có dữ liệu API. Nhập API key và nhấn **Lấy dữ liệu**.")
+    st.stop()
         df = pd.read_csv("get_weather_data")
         df.rename(columns={
             "timestamp": "Thời điểm",
@@ -104,9 +114,6 @@ elif option == "Lấy dữ liệu trực tiếp từ API":
         }, inplace=True)
         df["Thời điểm"] = pd.to_datetime(df["Thời điểm"])
         df["Thời gian/ngày"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
-        
-    else:
-        st.stop()    
     
     
 st.subheader(" 1. Dữ liệu đầu vào")
