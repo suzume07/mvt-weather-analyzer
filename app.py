@@ -45,12 +45,18 @@ def get_weather_data(city="Hanoi", api_key=None):
 # 1. NHẬP DỮ LIỆU
 # ============================================================
 
+# ============================================================
+# 1. NHẬP DỮ LIỆU
+# ============================================================
+
 st.sidebar.header("NHẬP DỮ LIỆU VÀO ỨNG DỤNG")
 option = st.sidebar.radio(
     "Chọn nguồn dữ liệu:",
     ["Dữ liệu mẫu", "Tải file CSV", "Lấy dữ liệu trực tiếp từ API"],
     index=0
 )
+
+df = None  
 
 if option == "Dữ liệu mẫu":
     df = pd.read_csv("data/sample_weather.csv")
@@ -63,8 +69,23 @@ if option == "Dữ liệu mẫu":
     df["Thời điểm"] = pd.to_datetime(df["Thời điểm"])
     df["Thời gian/ngày"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
 
+elif option == "Tải file CSV":
+    uploaded = st.sidebar.file_uploader("Tải lên file CSV", type=["csv"])
+    if uploaded is not None:
+        df = pd.read_csv(uploaded)
+        df.rename(columns={
+            "timestamp": "Thời điểm",
+            "temperature": "Nhiệt độ",
+            "humidity": "Độ ẩm",
+            "precip": "Lượng mưa"
+        }, inplace=True)
+        df["Thời điểm"] = pd.to_datetime(df["Thời điểm"])
+        df["Thời gian/ngày"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
+    else:
+        st.warning("Vui lòng tải file CSV hoặc chọn dữ liệu khác.")
+        st.stop()
+
 elif option == "Lấy dữ liệu trực tiếp từ API":
-    # Lưu thông tin trong session_state để tránh reload mất dữ liệu
     if "df_api" not in st.session_state:
         st.session_state.df_api = None
     if "api_city" not in st.session_state:
@@ -72,17 +93,14 @@ elif option == "Lấy dữ liệu trực tiếp từ API":
     if "api_key" not in st.session_state:
         st.session_state.api_key = ""
 
-    # Nhập thành phố và API key (giữ lại giá trị cũ)
     city_input = st.sidebar.text_input("Nhập tên thành phố:", value=st.session_state.api_city)
     api_key_input = st.sidebar.text_input("Nhập API key OpenWeatherMap:", type="password", value=st.session_state.api_key)
 
-    # Cập nhật session_state khi người dùng thay đổi giá trị
     if city_input != st.session_state.api_city:
         st.session_state.api_city = city_input
     if api_key_input != st.session_state.api_key:
         st.session_state.api_key = api_key_input
 
-    # Nút lấy dữ liệu
     if st.sidebar.button("Lấy dữ liệu"):
         df_new = get_weather_data(st.session_state.api_city, st.session_state.api_key)
         if df_new is not None:
@@ -91,13 +109,14 @@ elif option == "Lấy dữ liệu trực tiếp từ API":
         else:
             st.error("Không thể tải dữ liệu, vui lòng kiểm tra API key hoặc kết nối mạng.")
 
-    # Dữ liệu hiện tại
     if st.session_state.df_api is not None:
         df = st.session_state.df_api.copy()
     else:
         st.info("Nhập tên thành phố và API key, sau đó nhấn **Lấy dữ liệu**.")
         st.stop()
 
+st.subheader("1. Dữ liệu đầu vào")
+st.dataframe(df.head(10))
 
 # ============================================================
 # 2. BIỂU ĐỒ MINH HỌA
