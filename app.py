@@ -71,8 +71,16 @@ elif option == "Lấy dữ liệu trực tiếp từ API":
         st.session_state.api_key = ""
 
     # Nhập dữ liệu
-    city = st.sidebar.text_input("Nhập tên thành phố:", st.session_state.api_city)
-    api_key = st.sidebar.text_input("Nhập API key OpenWeatherMap:", type="password", value=st.session_state.api_key)
+    # Nhập thành phố và API key
+    city_input = st.sidebar.text_input("Nhập tên thành phố:", value=st.session_state.get("api_city", "Hanoi"))
+    api_key_input = st.sidebar.text_input("Nhập API key OpenWeatherMap:", type="password", value=st.session_state.get("api_key", ""))
+    
+    # Nếu người dùng thay đổi tên thành phố hoặc API key thì cập nhật lại session_state
+    if city_input != st.session_state.get("api_city", "Hanoi"):
+        st.session_state.api_city = city_input
+    if api_key_input != st.session_state.get("api_key", ""):
+        st.session_state.api_key = api_key_input
+
 
     # Nút tải dữ liệu
     if st.sidebar.button("Lấy dữ liệu"):
