@@ -84,19 +84,13 @@ elif option == "Lấy dữ liệu trực tiếp từ API":
     api_key = st.sidebar.text_input(" Nhập API key OpenWeatherMap:", type="password")
         
     if st.sidebar.button("Lấy dữ liệu"):
-        df_temp = get_weather_data(city, api_key)
-    if df_temp is not None:
+        df = get_weather_data(city, api_key)
+    if df is not None:
         st.success(f" Đã tải thành công dữ liệu thời tiết của **{city}**!")
     else:
         st.error("Không thể tải dữ liệu, vui lòng kiểm tra api key.")
         st.stop()
-   
-    if st.session_state.df_api is not None:
-        df = st.session_state.df_api
-        st.info(f"Dữ liệu đang hiển thị cho **{city}** (nguồn API).")
-    else:
-        st.warning("Chưa có dữ liệu API. Nhập API key và nhấn **Lấy dữ liệu**.")
-        st.stop()
+    
     
     
 st.subheader(" 1. Dữ liệu đầu vào")
