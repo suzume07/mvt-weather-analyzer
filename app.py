@@ -62,7 +62,7 @@ if option == "Dữ liệu mẫu":
     df["Thời gian/ngày"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
 
 elif option == "Lấy dữ liệu trực tiếp từ API":
-    # Dùng session_state để lưu lại thông tin
+    # Luu lai thong tin cu de khong reload page
     if "df_api" not in st.session_state:
         st.session_state.df_api = None
     if "api_city" not in st.session_state:
