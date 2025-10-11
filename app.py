@@ -105,15 +105,6 @@ if st.session_state.df_api is not None:
 else:
     st.warning("Chưa có dữ liệu API. Nhập API key và nhấn **Lấy dữ liệu**.")
     st.stop()
-        df = pd.read_csv("get_weather_data")
-        df.rename(columns={
-            "timestamp": "Thời điểm",
-            "temperature": "Nhiệt độ",
-            "humidity": "Độ ẩm",
-            "precip": "Lượng mưa"
-        }, inplace=True)
-        df["Thời điểm"] = pd.to_datetime(df["Thời điểm"])
-        df["Thời gian/ngày"] = (df["Thời điểm"] - df["Thời điểm"].iloc[0]).dt.total_seconds() / 86400.0
     
     
 st.subheader(" 1. Dữ liệu đầu vào")
