@@ -176,6 +176,28 @@ else:
     else:
         trend = f"giảm trung bình {abs(avg_per_hour):.4f} °C mỗi giờ (~{abs(avg_per_day):.6f} °C/ngày)"
     st.success(f"→ Nhìn chung, {col} có xu hướng **{trend}** trong giai đoạn quan sát.")
+st.subheader("3.5. Ma trận tương quan giữa các yếu tố thời tiết")
+
+corr_cols = ["Nhiệt độ", "Độ ẩm", "Lượng mưa"]
+corr_df = df[corr_cols].corr()
+
+fig_hm, ax_hm = plt.subplots(figsize=(6, 5))
+sns.heatmap(
+    corr_df,
+    annot=True,
+    fmt=".3f",
+    cmap="RdBu_r",
+    center=0,
+    vmin=-1,
+    vmax=1,
+    square=True,
+    linewidths=0.5,
+    cbar_kws={"label": "Hệ số tương quan"}
+)
+
+ax_hm.set_title("Ma trận tương quan giữa các yếu tố thời tiết")
+st.pyplot(fig_hm)
+fig_hm.savefig("correlation_weather.png", dpi=300, bbox_inches="tight")
 
 # Giải thích 
 with st.expander("Giải thích chi tiết"):
