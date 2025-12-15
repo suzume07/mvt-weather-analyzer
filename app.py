@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import requests
+import seaborn as sns
+
 
 st.set_page_config(page_title="Phân tích dữ liệu thời tiết MVT", layout="wide")
 st.title("PHÂN TÍCH DỮ LIỆU THỜI TIẾT ỨNG DỤNG ĐỊNH LÝ GIÁ TRỊ TRUNG BÌNH (MVT)")
@@ -196,7 +198,35 @@ with st.expander("Giải thích chi tiết"):
     Nếu tốc độ trung bình là -0.20 °C/giờ, nghĩa là cứ mỗi giờ nhiệt độ giảm trung bình 0.20 °C  
     → tương đương giảm khoảng 4.8 °C mỗi ngày.
     """)
-    
+
+# ============================================================
+# 3.5. MA TRẬN TƯƠNG QUAN (HEATMAP)
+# ============================================================
+
+st.subheader("3.5. Ma trận tương quan giữa các yếu tố thời tiết")
+
+corr_cols = ["Nhiệt độ", "Độ ẩm", "Lượng mưa"]
+corr_df = df[corr_cols].corr()
+
+fig_hm, ax_hm = plt.subplots(figsize=(6, 5))
+sns.heatmap(
+    corr_df,
+    annot=True,
+    fmt=".3f",
+    cmap="RdBu_r",
+    center=0,
+    vmin=-1,
+    vmax=1,
+    square=True,
+    linewidths=0.5,
+    cbar_kws={"label": "Hệ số tương quan"}
+)
+
+ax_hm.set_title("Ma trận tương quan giữa các yếu tố thời tiết")
+st.pyplot(fig_hm)
+fig_hm.savefig("correlation_weather.png", dpi=300, bbox_inches="tight")
+
+
 # ============================================================
 # CÁC HÀM PHỤ 
 # ============================================================
