@@ -5,3 +5,5 @@ matplotlib>=3.4
 jupyter
 notebook
 streamlit>=1.31
+seaborn
+requests
